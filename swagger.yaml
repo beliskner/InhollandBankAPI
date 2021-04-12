@@ -1,0 +1,559 @@
+openapi: 3.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/beliskner/InhollandBankAPI/1.0.0
+info:
+  version: "1.0.0"
+  title: Inholland Bank API
+  description: >-
+    This is the swagger documentation of the Inholland Bank API
+security:
+  - password:
+      - read
+      - write
+paths:
+  /holders:
+    get:
+      summary: Gets a list of all Holders
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArrayOfHolders'
+        '401':
+          description: Authorization information is missing or invalid.
+      tags:
+        - Holders
+    post:
+      summary: Create a Holder
+      requestBody:
+        description: Request body to create a new holder
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestBodyHolder'
+      # We want to require no security schemes and override the globally define security scheme.
+      # To do that, we simply provide an empty array to the 'security' property.
+      security: [ ]
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnBodyHolder'
+        '401':
+          description: Authorization information is missing or invalid.
+      tags:
+        - Holders
+  /holders/{id}:
+    get:
+      summary: Gets Holder by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: >
+            Gets a holder by ID.
+            A holder is a person/entity with a portfolio of accounts
+            Each holder is identified by a numeric `id`.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnBodyHolder'
+        '400':
+          description: The specified holder ID is invalid (not a number).
+        '401':
+          description: Authorization information is missing or invalid.
+        '404':
+          description: Holder with the specified ID was not found.
+      tags:
+        - Holders
+    put:
+      summary: Updates a Holder by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: >
+            Updates a holder by ID.
+            A holder is a person/entity with a portfolio of accounts
+            Each holder is identified by a numeric `id`.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnBodyHolder'
+        '400':
+          description: The specified holder ID is invalid (not a number).
+        '401':
+          description: Authorization information is missing or invalid.
+        '404':
+          description: Holder with the specified ID was not found.
+      tags:
+        - Holders
+    delete:
+      summary: Deletes a Holder by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: >
+            Deletes a holder by ID.
+            A holder is a person/entity with a portfolio of accounts
+            Each holder is identified by a numeric `id`.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnBodyHolder'
+        '400':
+          description: The specified holder ID is invalid (not a number).
+        '401':
+          description: Authorization information is missing or invalid.
+        '404':
+          description: Holder with the specified ID was not found.
+      tags:
+        - Holders
+  /holders/{id}/accounts:
+    get:
+      summary: Get accounts according to Holder ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: >
+            A holder is a person/entity with a portfolio of accounts
+            Each holder is identified by a numeric `id`.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArrayOfAccounts'
+        '400':
+          description: The specified holder ID is invalid (not a number).
+        '404':
+          description: Holder with the specified ID was not found.
+      tags:
+        - Holders
+  /accounts:
+    get:
+      summary: Gets a list of all Accounts
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArrayOfAccounts'
+        '401':
+          description: Authorization information is missing or invalid.
+      tags:
+        - Accounts
+    post:
+      summary: Create an Account
+      requestBody:
+        description: Request body to create a new account
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestBodyAccount'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnBodyAccount'
+        '401':
+          description: Authorization information is missing or invalid.
+      tags:
+        - Accounts
+  /accounts/{iban}:
+    get:
+      summary: Gets Account by IBAN
+      parameters:
+        - in: path
+          name: iban
+          required: true
+          schema:
+            type: string
+          description: >
+            Gets an account by IBAN.
+            An account is a balance of currency owned by a holder.
+            Each account is identified by a string identifier `iban`.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnBodyAccount'
+        '400':
+          description: The specified account IBAN is invalid (incorrect syntax).
+        '401':
+          description: Authorization information is missing or invalid.
+        '404':
+          description: Account with the specified IBAN was not found.
+      tags:
+        - Accounts
+    put:
+      summary: Updates an Account by IBAN
+      parameters:
+        - in: path
+          name: iban
+          required: true
+          schema:
+            type: string
+          description: >
+            Updates an account by IBAN.
+            An account is a balance of currency owned by a holder.
+            Each account is identified by a string identifier `iban`.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnBodyAccount'
+        '400':
+          description: The specified account IBAN is invalid (incorrect syntax).
+        '401':
+          description: Authorization information is missing or invalid.
+        '404':
+          description: Account with the specified IBAN was not found.
+      tags:
+        - Accounts
+    delete:
+      summary: Deletes an Account by IBAN
+      parameters:
+        - in: path
+          name: iban
+          required: true
+          schema:
+            type: string
+          description: >
+            Deletes an account by IBAN.
+            An account is a balance of currency owned by a holder.
+            Each account is identified by a string identifier `iban`.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnBodyAccount'
+        '400':
+          description: The specified account IBAN is invalid (incorrect syntax).
+        '401':
+          description: Authorization information is missing or invalid.
+        '404':
+          description: Account with the specified IBAN was not found.
+      tags:
+        - Accounts
+  /transactions:
+    get:
+      summary: Gets a list of all Transactions
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArrayOfTransactions'
+        '401':
+          description: Authorization information is missing or invalid.
+      tags:
+        - Transactions
+    post:
+      summary: Create a Transaction
+      requestBody:
+        description: Request body to create a new transaction
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestBodyTransaction'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnBodyTransaction'
+        '401':
+          description: Authorization information is missing or invalid.
+      tags:
+        - Transactions
+  /transaction/{id}:
+    get:
+      summary: Gets Transaction by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: >
+            Gets a transaction by ID.
+            A transaction is a balance change between two accounts, one account that subtracts currency which is added to the opposing account.
+            Each transaction is identified by a numeric `id`.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnBodyTransaction'
+        '400':
+          description: The specified transaction ID is invalid (not a number).
+        '401':
+          description: Authorization information is missing or invalid.
+        '404':
+          description: Transaction with the specified ID was not found.
+      tags:
+        - Transactions
+    put:
+      summary: Updates a Transaction by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: >
+            Updates a transaction by ID.
+            A transaction is a balance change between two accounts, one account that subtracts currency which is added to the opposing account.
+            Each transaction is identified by a numeric `id`.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnBodyTransaction'
+        '400':
+          description: The specified transaction ID is invalid (not a number).
+        '401':
+          description: Authorization information is missing or invalid.
+        '404':
+          description: Transaction with the specified ID was not found.
+      tags:
+        - Transactions
+    delete:
+      summary: Deletes a Transaction by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: >
+            Deletes a transaction by ID.
+            A transaction is a balance change between two accounts, one account that subtracts currency which is added to the opposing account.
+            Each transaction is identified by a numeric `id`.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnBodyTransaction'
+        '400':
+          description: The specified transaction ID is invalid (not a number).
+        '401':
+          description: Authorization information is missing or invalid.
+        '404':
+          description: Transaction with the specified ID was not found.
+      tags:
+        - Transactions
+components:
+  schemas:
+    ArrayOfHolders:
+      description: Array of return body of Holder
+      type: array
+      items:
+        $ref: '#/components/schemas/ReturnBodyHolder'
+    ArrayOfAccounts:
+      description: Array of return body of Account
+      type: array
+      items:
+        $ref: '#/components/schemas/ReturnBodyAccount'
+    ArrayOfTransactions:
+      description: Array of return body of Transaction
+      type: array
+      items:
+        $ref: '#/components/schemas/ReturnBodyTransaction'
+    ReturnBodyHolder:
+      description: Return body of the Holder
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        email:
+          description: Email of the holder
+          type: string
+          example: john@doe.com
+        role:
+          description: Role of the holder (Employee or Customer)
+          type: string
+          enum:
+            - Employee
+            - Customer
+        accounts:
+          description: Array of accounts belonging to the Holder
+          type: array
+          items:
+            properties:
+              iban:
+                description: IBAN of the account
+                type: string
+                example: NL01INHO0000000002
+              accountType:
+                description: Type of the account (Current or Savings)
+                type: string
+                enum:
+                  - Current
+                  - Savings
+              balance:
+                description: Balance of the account
+                type: number
+                minimum: 0
+                example: 500.25
+    ReturnBodyAccount:
+      description: Return body type of Account
+      type: object
+      properties:
+        iban:
+          description: IBAN of the account
+          type: string
+          example: NL01INHO0000000002
+        accountType:
+          description: Type of the account (Current or Savings)
+          type: string
+          enum:
+            - Current
+            - Savings
+        balance:
+          description: Balance of the account
+          type: number
+          minimum: 0
+          example: 500.25
+    ReturnBodyTransaction:
+      description: Return body type of Transaction
+      type: object
+      properties:
+        id:
+          description: Unique ID belonging to transaction
+          type: integer
+          example: 1
+        performedHolder:
+          description: Holder ID performing the transaction
+          type: integer
+          example: 1
+        fromAccount:
+          description: IBAN of the account making the transaction
+          type: string
+          example: NL01INHO0000000002
+        toAccount:
+          description: IBAN of the account recieving the transaction
+          type: string
+          example: NL01INHO0000000003
+        Amount:
+          description: Amount of currency performed in transaction
+          type: number
+          minimum: 0.01
+          example: 500.01
+    RequestBodyAccount:
+      description: Request body type of account (Current or Savings)
+      type: object
+      properties:
+        holderId:
+          description: The ID of the holder the account will be bound to
+          type: integer
+          example: 1
+        accountType:
+          description: Type of account. Can be Current or Savings
+          type: string
+          enum:
+            - Current
+            - Savings
+    RequestBodyHolder:
+      description: Request body type of a Holder
+      type: object
+      properties:
+        email:
+          description: Email for the holder account to be made
+          type: string
+          example: john@doe.com
+        password:
+          description: Password for the holder account to be made
+          type: string
+          example: johndoe123
+    RequestBodyTransaction:
+      description: Request body type of a Transaction
+      type: object
+      properties:
+        performedHolder:
+          description: Holder ID performing the transaction
+          type: integer
+          example: 1
+        fromAccount:
+          description: IBAN of the account making the transaction
+          type: string
+          example: NL01INHO0000000002
+        toAccount:
+          description: IBAN of the account recieving the transaction
+          type: string
+          example: NL01INHO0000000003
+        Amount:
+          description: Amount of currency performed in transaction
+          type: number
+          minimum: 0.01
+          example: 500.01
+  securitySchemes:
+    password:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: 'http://example.com/oauth/token'
+          scopes:
+            write: allows modifying resources
+            read: allows reading resources
+tags:
+  - name: Holders
+    description: Endpoints relating holders. A holder is a person/entity with a portfolio of accounts
+  - name: Accounts
+    description: Endpoints related to accounts, these accounts are owned by holders
+  - name: Transactions
+    description: Endpoints relating to transactions
