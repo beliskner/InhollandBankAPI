@@ -92,9 +92,16 @@ paths:
             Updates a holder by ID.
             A holder is a person/entity with a portfolio of accounts
             Each holder is identified by a numeric `id`.
+      requestBody:
+        description: Request body to update a holder
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestBodyUpdateHolder'
       responses:
         '200':
-          description: OK
+          description: Updated
           content:
             application/json:
               schema:
@@ -235,9 +242,16 @@ paths:
             Updates an account by IBAN.
             An account is a balance of currency owned by a holder.
             Each account is identified by a string identifier `iban`.
+      requestBody:
+        description: Request body to update account
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestBodyUpdateAccount'
       responses:
         '200':
-          description: OK
+          description: Updated
           content:
             application/json:
               schema:
@@ -353,9 +367,16 @@ paths:
             Updates a transaction by ID.
             A transaction is a balance change between two accounts, one account that subtracts currency which is added to the opposing account.
             Each transaction is identified by a numeric `id`.
+      requestBody:
+        description: Request body to update a transaction
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestBodyUpdateTransaction'
       responses:
         '200':
-          description: OK
+          description: Updated
           content:
             application/json:
               schema:
@@ -546,6 +567,57 @@ components:
           type: number
           minimum: 0.01
           example: 500.01
+    RequestBodyUpdateHolder:
+      description: Request body update type of Holder
+      type: object
+      properties:
+        email:
+          description: Email of the holder
+          type: string
+          example: john@doe.com
+        role:
+          description: Role of the holder (Employee or Customer)
+          type: string
+          enum:
+            - Employee
+            - Customer
+    RequestBodyUpdateAccount:
+      description: Request body type of account (Current or Savings)
+      type: object
+      properties:
+        holderId:
+          description: The ID of the holder the account will be bound to
+          type: integer
+          example: 1
+        accountType:
+          description: Type of account. Can be Current or Savings
+          type: string
+          enum:
+            - Current
+            - Saving
+    RequestBodyUpdateTransaction:
+      description: Request body type of a Transaction
+      type: object
+      properties:
+        performedHolder:
+          description: Holder ID performing the transaction
+          type: integer
+          example: 1
+        fromAccount:
+          description: IBAN of the account making the transaction
+          type: string
+          example: NL01INHO0000000002
+        toAccount:
+          description: IBAN of the account recieving the transaction
+          type: string
+          example: NL01INHO0000000003
+        Amount:
+          description: Amount of currency performed in transaction
+          type: number
+          minimum: 0.01
+          example: 500.01
+    
+
   securitySchemes:
     password:
       type: oauth2
