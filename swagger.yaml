@@ -419,28 +419,16 @@ paths:
         - Transactions
 components:
   schemas:
+    # Holder schemas
     ArrayOfHolders:
       description: Array of return body of Holder
       type: array
       items:
         $ref: '#/components/schemas/ReturnBodyHolder'
-    ArrayOfAccounts:
-      description: Array of return body of Account
-      type: array
-      items:
-        $ref: '#/components/schemas/ReturnBodyAccount'
-    ArrayOfTransactions:
-      description: Array of return body of Transaction
-      type: array
-      items:
-        $ref: '#/components/schemas/ReturnBodyTransaction'
-    ReturnBodyHolder:
-      description: Return body of the Holder
+    BaseHolder:
+      description: Base of holder
       type: object
       properties:
-        id:
-          type: integer
-          example: 1
         email:
           description: Email of the holder
           type: string
@@ -451,28 +439,43 @@ components:
           enum:
             - Employee
             - Customer
-        accounts:
-          description: Array of accounts belonging to the Holder
-          type: array
-          items:
-            properties:
-              iban:
-                description: IBAN of the account
-                type: string
-                example: NL01INHO0000000002
-              accountType:
-                description: Type of the account (Current or Savings)
-                type: string
-                enum:
-                  - Current
-                  - Savings
-              balance:
-                description: Balance of the account
-                type: number
-                minimum: 0
-                example: 500.25
-    ReturnBodyAccount:
-      description: Return body type of Account
+    ReturnBodyHolder:
+      description: Return body of the Holder
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseHolder'
+      - type: object
+        required:
+          - id
+        properties:
+          id:
+            type: integer
+            example: 1
+          accounts:
+            description: Array of accounts belonging to the Holder
+            type: array
+            items:
+              allOf:
+              - $ref: '#/components/schemas/BaseAccount'
+    RequestBodyHolder:
+      description: Request body type of a Holder
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseHolder'
+    RequestBodyUpdateHolder:
+      description: Request body update type of Holder
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseHolder'
+            
+    # Account schemas
+    ArrayOfAccounts:
+      description: Array of return body of Account
+      type: array
+      items:
+        $ref: '#/components/schemas/ReturnBodyAccount'
+    BaseAccount:
+      description: Base of account
       type: object
       properties:
         iban:
@@ -490,38 +493,8 @@ components:
           type: number
           minimum: 0
           example: 500.25
-    ReturnBodyTransaction:
-      description: Return body type of Transaction
-      type: object
-      properties:
-        id:
-          description: Unique ID belonging to transaction
-          type: integer
-          example: 1
-        performedHolder:
-          description: Holder ID performing the transaction
-          type: integer
-          example: 1
-        fromAccount:
-          description: IBAN of the account making the transaction
-          type: string
-          example: NL01INHO0000000002
-        toAccount:
-          description: IBAN of the account recieving the transaction
-          type: string
-          example: NL01INHO0000000003
-        Amount:
-          description: Amount of currency performed in transaction
-          type: number
-          minimum: 0.01
-          example: 500.01
-        Datetime:
-          description: Datetime the transaction was executed
-          type: string
-          format: date-time
-          example: '2017-07-21T17:32:28Z'
-    RequestBodyAccount:
-      description: Request body type of account (Current or Savings)
+    BaseHolderAccount:
+      description: Base of object to request account by holder
       type: object
       properties:
         holderId:
@@ -534,68 +507,29 @@ components:
           enum:
             - Current
             - Savings
-    RequestBodyHolder:
-      description: Request body type of a Holder
+    ReturnBodyAccount:
+      description: Return body type of Account
       type: object
-      properties:
-        email:
-          description: Email for the holder account to be made
-          type: string
-          example: john@doe.com
-        password:
-          description: Password for the holder account to be made
-          type: string
-          example: johndoe123
-    RequestBodyTransaction:
-      description: Request body type of a Transaction
+      allOf:
+      - $ref: '#/components/schemas/BaseAccount'
+    RequestBodyAccount:
+      description: Request body type of account (Current or Savings)
       type: object
-      properties:
-        performedHolder:
-          description: Holder ID performing the transaction
-          type: integer
-          example: 1
-        fromAccount:
-          description: IBAN of the account making the transaction
-          type: string
-          example: NL01INHO0000000002
-        toAccount:
-          description: IBAN of the account recieving the transaction
-          type: string
-          example: NL01INHO0000000003
-        Amount:
-          description: Amount of currency performed in transaction
-          type: number
-          minimum: 0.01
-          example: 500.01
-    RequestBodyUpdateHolder:
-      description: Request body update type of Holder
-      type: object
-      properties:
-        email:
-          description: Email of the holder
-          type: string
-          example: john@doe.com
-        role:
-          description: Role of the holder (Employee or Customer)
-          type: string
-          enum:
-            - Employee
-            - Customer
+      allOf:
+      - $ref: '#/components/schemas/BaseHolderAccount'
     RequestBodyUpdateAccount:
       description: Request body type of account (Current or Savings)
       type: object
-      properties:
-        holderId:
-          description: The ID of the holder the account will be bound to
-          type: integer
-          example: 1
-        accountType:
-          description: Type of account. Can be Current or Savings
-          type: string
-          enum:
-            - Current
-            - Saving
-    RequestBodyUpdateTransaction:
+      allOf:
+      - $ref: '#/components/schemas/BaseHolderAccount'
+            
+    # Transaction schemas
+    ArrayOfTransactions:
+      description: Array of return body of Transaction
+      type: array
+      items:
+        $ref: '#/components/schemas/ReturnBodyTransaction'
+    BaseTransaction:
       description: Request body type of a Transaction
       type: object
       properties:
@@ -616,6 +550,32 @@ components:
           type: number
           minimum: 0.01
           example: 500.01
+    ReturnBodyTransaction:
+      description: Return body type of Transaction
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseTransaction'
+      - type: object
+        properties:
+          id:
+            type: integer
+            example: 1
+          Datetime:
+            description: Datetime the transaction was executed
+            type: string
+            format: date-time
+            example: '2017-07-21T17:32:28Z'
+        
+    RequestBodyTransaction:
+      description: Request body type of a Transaction
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseTransaction'
+    RequestBodyUpdateTransaction:
+      description: Request body type of a Transaction
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseTransaction'
     
 
   securitySchemes:
