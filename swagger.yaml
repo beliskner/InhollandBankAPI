@@ -491,6 +491,18 @@ components:
           type: number
           minimum: 0.01
           example: 500.01
+        TransactionType:
+          description: Type of transaction. Can be Transfer or Refund.
+          type: string
+          enum:
+            - Transfer
+            - Refund
+        Status:
+          description: Status of transaction. Can be Accepted or Pending.
+          type: string
+          enum:
+            - Accepted
+            - Pending
     ReturnBodyTransaction:
       description: Return body type of Transaction
       type: object
