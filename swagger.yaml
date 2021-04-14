@@ -115,7 +115,7 @@ paths:
       tags:
         - Holders
     delete:
-      summary: Deletes a Holder by ID
+      summary: Set Holder status to frozen by id
       parameters:
         - in: path
           name: id
@@ -265,7 +265,7 @@ paths:
       tags:
         - Accounts
     delete:
-      summary: Deletes an Account by IBAN
+      summary: Set Account status to closed by IBAN
       parameters:
         - in: path
           name: iban
