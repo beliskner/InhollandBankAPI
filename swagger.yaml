@@ -512,11 +512,6 @@ components:
       type: object
       allOf:
       - $ref: '#/components/schemas/BaseTransaction'
-    RequestBodyUpdateTransaction:
-      description: Request body type of a Transaction
-      type: object
-      allOf:
-      - $ref: '#/components/schemas/BaseTransaction'
     
 
   securitySchemes:
