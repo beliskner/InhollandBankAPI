@@ -354,69 +354,6 @@ paths:
           description: Transaction with the specified ID was not found.
       tags:
         - Transactions
-    put:
-      summary: Updates a Transaction by ID
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-            minimum: 1
-          description: >
-            Updates a transaction by ID.
-            A transaction is a balance change between two accounts, one account that subtracts currency which is added to the opposing account.
-            Each transaction is identified by a numeric `id`.
-      requestBody:
-        description: Request body to update a transaction
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RequestBodyUpdateTransaction'
-      responses:
-        '200':
-          description: Updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ReturnBodyTransaction'
-        '400':
-          description: The specified transaction ID is invalid (not a number).
-        '401':
-          description: Authorization information is missing or invalid.
-        '404':
-          description: Transaction with the specified ID was not found.
-      tags:
-        - Transactions
-    delete:
-      summary: Deletes a Transaction by ID
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-            minimum: 1
-          description: >
-            Deletes a transaction by ID.
-            A transaction is a balance change between two accounts, one account that subtracts currency which is added to the opposing account.
-            Each transaction is identified by a numeric `id`.
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ReturnBodyTransaction'
-        '400':
-          description: The specified transaction ID is invalid (not a number).
-        '401':
-          description: Authorization information is missing or invalid.
-        '404':
-          description: Transaction with the specified ID was not found.
-      tags:
-        - Transactions
 components:
   schemas:
     # Holder schemas
@@ -451,6 +388,12 @@ components:
           id:
             type: integer
             example: 1
+          status:
+            description: Status of holder. Can be Active or Frozen
+            type: string
+            enum:
+              - Active
+              - Frozen
           accounts:
             description: Array of accounts belonging to the Holder
             type: array
@@ -478,50 +421,48 @@ components:
       description: Base of account
       type: object
       properties:
-        iban:
-          description: IBAN of the account
-          type: string
-          example: NL01INHO0000000002
         accountType:
           description: Type of the account (Current or Savings)
           type: string
           enum:
             - Current
             - Savings
+        status:
+          description: Status of account. Can be open or closed
+          type: string
+          enum:
+            - Open
+            - Closed
         balance:
           description: Balance of the account
           type: number
           minimum: 0
           example: 500.25
-    BaseHolderAccount:
-      description: Base of object to request account by holder
-      type: object
-      properties:
-        holderId:
-          description: The ID of the holder the account will be bound to
-          type: integer
-          example: 1
-        accountType:
-          description: Type of account. Can be Current or Savings
-          type: string
-          enum:
-            - Current
-            - Savings
     ReturnBodyAccount:
       description: Return body type of Account
       type: object
       allOf:
       - $ref: '#/components/schemas/BaseAccount'
+      - type: object
+        properties:
+          holderId:
+            description: The ID of the holder the account will be bound to
+            type: integer
+            example: 1
+          iban:
+            description: IBAN of the account
+            type: string
+            example: NL01INHO0000000002
     RequestBodyAccount:
       description: Request body type of account (Current or Savings)
       type: object
       allOf:
-      - $ref: '#/components/schemas/BaseHolderAccount'
+      - $ref: '#/components/schemas/BaseAccount'
     RequestBodyUpdateAccount:
       description: Request body type of account (Current or Savings)
       type: object
       allOf:
-      - $ref: '#/components/schemas/BaseHolderAccount'
+      - $ref: '#/components/schemas/BaseAccount'
             
     # Transaction schemas
     ArrayOfTransactions:
