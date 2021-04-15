@@ -313,14 +313,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RequestBodyTransaction'
+              oneOf:
+                - $ref: '#/components/schemas/RequestBodyTransaction'
+                - $ref: '#/components/schemas/RequestBodyDeposit'
+                - $ref: '#/components/schemas/RequestBodyWithdrawal'
       responses:
         '201':
           description: Created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReturnBodyTransaction'
+                oneOf:
+                  - $ref: '#/components/schemas/ReturnBodyTransaction'
+                  - $ref: '#/components/schemas/ReturnBodyDeposit'
+                  - $ref: '#/components/schemas/ReturnBodyWithdrawal'
         '401':
           description: Authorization information is missing or invalid.
       tags:
@@ -354,8 +360,156 @@ paths:
           description: Transaction with the specified ID was not found.
       tags:
         - Transactions
+  /transactions/{id}/tan:
+    get:
+      summary: Gets TAN by transaction ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: >
+            Gets a transaction by ID.
+            A transaction is a balance change between two accounts, one account that subtracts currency which is added to the opposing account.
+            Each transaction is identified by a numeric `id`.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  TAN:
+                    type: integer
+                    example: 1234
+        '401':
+          description: Authorization information is missing or invalid.
+      tags:
+        - Transactions
+    post:
+      summary: Create a Transaction
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        description: Request body to create a new transaction
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                TAN:
+                  type: integer
+                  example: 1234
+      responses:
+        '200':
+          description: TAN correct
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ReturnBodyTransaction'
+        '401':
+          description: Authorization information is missing or invalid.
+      tags:
+        - Transactions
+  
 components:
   schemas:
+    # Full models
+    Account:
+      description: Full model of an account object
+      allOf:
+      - $ref: '#/components/schemas/BaseAccount'
+      - type: object
+        properties:
+          holderId:
+            description: The ID of the holder the account will be bound to
+            type: integer
+            example: 1
+          iban:
+            description: IBAN of the account
+            type: string
+            example: NL01INHO0000000002
+          balance:
+            description: Balance of the account
+            type: number
+            minimum: 0
+            example: 500.25
+    Holder:
+      description: Return body of the Holder
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseHolder'
+      - type: object
+        properties:
+          password:
+            type: string
+            example: 'p4ssw0rd'
+          salt:
+            type: string
+            example: '3487238472'
+          id:
+            type: integer
+            example: 1
+          status:
+            description: Status of holder. Can be Active or Frozen
+            type: string
+            enum:
+              - Active
+              - Frozen
+          accounts:
+            description: Array of accounts belonging to the Holder
+            type: array
+            items:
+              allOf:
+              - $ref: '#/components/schemas/BaseAccount'
+    Transaction:
+      description: Model of full transaction object
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseTransaction'
+      - type: object
+        properties:
+          fromAccount:
+            description: IBAN of the account making the transaction
+            type: string
+            example: NL01INHO0000000002
+          toAccount:
+            description: IBAN of the account recieving the transaction
+            type: string
+            example: NL01INHO0000000003
+          id:
+            type: integer
+            example: 1
+          Datetime:
+            description: Datetime the transaction was executed
+            type: string
+            format: date-time
+            example: '2017-07-21T17:32:28Z'
+          Status:
+            description: Status of transaction. Can be Accepted or Pending.
+            type: string
+            enum:
+              - Approved
+              - Pending
+              - Disapproved
+          TAN:
+            description: Four integer TAN code to confirm transaction
+            type: integer
+            example: 1234
+
     # Holder schemas
     ArrayOfHolders:
       description: Array of return body of Holder
@@ -382,8 +536,6 @@ components:
       allOf:
       - $ref: '#/components/schemas/BaseHolder'
       - type: object
-        required:
-          - id
         properties:
           id:
             type: integer
@@ -405,12 +557,26 @@ components:
       type: object
       allOf:
       - $ref: '#/components/schemas/BaseHolder'
+      - type: object
+      properties:
+        password:
+          type: string
+          example: 'p4ssw0rd'
+      required:
+        - password
+        - email
     RequestBodyUpdateHolder:
       description: Request body update type of Holder
       type: object
       allOf:
       - $ref: '#/components/schemas/BaseHolder'
-            
+      - type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+      required:
+        - id
     # Account schemas
     ArrayOfAccounts:
       description: Array of return body of Account
@@ -433,11 +599,6 @@ components:
           enum:
             - Open
             - Closed
-        balance:
-          description: Balance of the account
-          type: number
-          minimum: 0
-          example: 500.25
     ReturnBodyAccount:
       description: Return body type of Account
       type: object
@@ -453,23 +614,47 @@ components:
             description: IBAN of the account
             type: string
             example: NL01INHO0000000002
+          balance:
+            description: Balance of the account
+            type: number
+            minimum: 0
+            example: 500.25
     RequestBodyAccount:
       description: Request body type of account (Current or Savings)
       type: object
       allOf:
       - $ref: '#/components/schemas/BaseAccount'
+      - type: object
+      properties:
+        holderId:
+          type: integer
+          example: 1
+      required:
+        - holderId
+        - accountType
     RequestBodyUpdateAccount:
       description: Request body type of account (Current or Savings)
       type: object
       allOf:
       - $ref: '#/components/schemas/BaseAccount'
-            
+      - type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+      required:
+        - id
+        - accountType
+
     # Transaction schemas
     ArrayOfTransactions:
       description: Array of return body of Transaction
       type: array
       items:
-        $ref: '#/components/schemas/ReturnBodyTransaction'
+        allOf:
+        - $ref: '#/components/schemas/ReturnBodyTransaction'
+        - $ref: '#/components/schemas/ReturnBodyDeposit'
+        - $ref: '#/components/schemas/ReturnBodyWithdrawal'
     BaseTransaction:
       description: Request body type of a Transaction
       type: object
@@ -478,14 +663,6 @@ components:
           description: Holder ID performing the transaction
           type: integer
           example: 1
-        fromAccount:
-          description: IBAN of the account making the transaction
-          type: string
-          example: NL01INHO0000000002
-        toAccount:
-          description: IBAN of the account recieving the transaction
-          type: string
-          example: NL01INHO0000000003
         Amount:
           description: Amount of currency performed in transaction
           type: number
@@ -497,12 +674,8 @@ components:
           enum:
             - Transfer
             - Refund
-        Status:
-          description: Status of transaction. Can be Accepted or Pending.
-          type: string
-          enum:
-            - Accepted
-            - Pending
+            - Deposit
+            - Withdrawal
     ReturnBodyTransaction:
       description: Return body type of Transaction
       type: object
@@ -510,6 +683,59 @@ components:
       - $ref: '#/components/schemas/BaseTransaction'
       - type: object
         properties:
+          fromAccount:
+            description: IBAN of the account making the transaction
+            type: string
+            example: NL01INHO0000000002
+          toAccount:
+            description: IBAN of the account recieving the transaction
+            type: string
+            example: NL01INHO0000000003
+          id:
+            type: integer
+            example: 1
+          Datetime:
+            description: Datetime the transaction was executed
+            type: string
+            format: date-time
+            example: '2017-07-21T17:32:28Z'
+          Status:
+            description: Status of transaction. Can be Accepted or Pending.
+            type: string
+            enum:
+              - Approved
+              - Pending
+              - Disapproved
+    ReturnBodyDeposit:
+      description: Return body type of Deposit
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseTransaction'
+      - type: object
+        properties:
+          toAccount:
+            description: IBAN of the account recieving the transaction
+            type: string
+            example: NL01INHO0000000003
+          id:
+            type: integer
+            example: 1
+          Datetime:
+            description: Datetime the transaction was executed
+            type: string
+            format: date-time
+            example: '2017-07-21T17:32:28Z'
+    ReturnBodyWithdrawal:
+      description: Return body type of Withdrawal
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseTransaction'
+      - type: object
+        properties:
+          fromAccount:
+            description: IBAN of the account making the transaction
+            type: string
+            example: NL01INHO0000000003
           id:
             type: integer
             example: 1
@@ -524,6 +750,54 @@ components:
       type: object
       allOf:
       - $ref: '#/components/schemas/BaseTransaction'
+      - type: object
+        properties:
+          fromAccount:
+            description: IBAN of the account making the transaction
+            type: string
+            example: NL01INHO0000000002
+          toAccount:
+            description: IBAN of the account recieving the transaction
+            type: string
+            example: NL01INHO0000000003
+        required:
+          - performedHolder
+          - Amount
+          - TransactionType
+          - toAccount
+          - fromAccount
+    RequestBodyDeposit:
+      description: Request body type of a Deposit
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseTransaction'
+      - type: object
+        properties:
+          toAccount:
+            description: IBAN of the account recieving the transaction
+            type: string
+            example: NL01INHO0000000003
+      required:
+        - performedHolder
+        - Amount
+        - TransactionType
+        - toAccount
+    RequestBodyWithdrawal:
+      description: Request body type of a Withdrawal
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseTransaction'
+      - type: object
+        properties:
+          fromAccount:
+            description: IBAN of the account making the transaction
+            type: string
+            example: NL01INHO0000000002
+      required:
+        - performedHolder
+        - Amount
+        - TransactionType
+        - fromAccount
     
 
   securitySchemes:
