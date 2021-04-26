@@ -32,31 +32,22 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReturnBodyHolder'
+                description: Return the account balance
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: 'AVeryCoolEncryptedToken'
         '401':
           $ref: '#/components/responses/Unauthorized'
       tags:
         - Auth
-  /auth/register:
+  /auth/logout:
     post:
-      summary: Register a Holder
-      requestBody:
-        description: Request body to register a new holder
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RequestBodyHolder'
-      # We want to require no security schemes and override the globally define security scheme.
-      # To do that, we simply provide an empty array to the 'security' property.
-      security: [ ]
+      summary: Logs the user out and destroys token
       responses:
-        '201':
-          description: Registered
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ReturnBodyHolder'
+        '200':
+          description: Logged out
       tags:
         - Auth
   /holders:
