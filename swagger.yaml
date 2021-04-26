@@ -61,7 +61,16 @@ paths:
         - Auth
   /holders:
     get:
-      summary: Gets a list of all Holders
+      summary: Gets a list of all Holders (or by role)
+      parameters:
+        - in: query
+          name: role
+          required: false
+          schema:
+            type: string
+            enum:
+              - Customer
+              - Employee
       responses:
         '200':
           description: OK
