@@ -38,9 +38,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RequestBodyHolder'
-      # We want to require no security schemes and override the globally define security scheme.
-      # To do that, we simply provide an empty array to the 'security' property.
-      security: [ ]
       responses:
         '201':
           description: Created
@@ -315,6 +312,31 @@ paths:
           $ref: '#/components/responses/NotFound'
       tags:
         - Accounts
+        
+  /accounts/{iban}/balance:
+    get:
+      summary: Gets balance by iban
+      parameters:
+        - in: path
+          name: iban
+          required: true
+          schema:
+            type: string
+          description: >
+            Gets an account by IBAN.
+            An account is a balance of currency owned by a holder.
+            Each account is identified by a string identifier `iban`.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                description: Return the account balance
+                type: number
+                example: 500.25
+      tags:
+      - Accounts
   /transactions:
     get:
       summary: Gets a list of all Transactions
@@ -564,6 +586,16 @@ components:
           enum:
             - Employee
             - Customer
+        maxTransaction:
+          description: Combined transaction amount cannot exeed this limit per day. Defined by Holder.
+          type: number
+          minimum: 5000
+          example: 500.25
+        maxTransfer:
+          description: Single transaction cannot exeed this limit. Defined by Holder.
+          type: number
+          minimum: 1000
+          example: 500.25
     ReturnBodyHolder:
       description: Return body of the Holder
       type: object
@@ -633,6 +665,11 @@ components:
           enum:
             - Open
             - Closed
+        minBalance:
+          description: Balance cannot be lower than this amount. Defined by Holder.
+          type: number
+          minimum: -1000
+          example: -500.25
     ReturnBodyAccount:
       description: Return body type of Account
       type: object
