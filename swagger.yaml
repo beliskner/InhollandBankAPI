@@ -13,6 +13,52 @@ security:
       - read
       - write
 paths:
+  /auth/login:
+    post:
+      summary: Login a Holder
+      requestBody:
+        description: Request body to login a holder
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+      # We want to require no security schemes and override the globally define security scheme.
+      # To do that, we simply provide an empty array to the 'security' property.
+      security: [ ]
+      responses:
+        '201':
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnBodyHolder'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      tags:
+        - Auth
+  /auth/register:
+    post:
+      summary: Register a Holder
+      requestBody:
+        description: Request body to register a new holder
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestBodyHolder'
+      # We want to require no security schemes and override the globally define security scheme.
+      # To do that, we simply provide an empty array to the 'security' property.
+      security: [ ]
+      responses:
+        '201':
+          description: Registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnBodyHolder'
+      tags:
+        - Auth
   /holders:
     get:
       summary: Gets a list of all Holders
@@ -461,6 +507,23 @@ paths:
   
 components:
   schemas:
+    # Login 
+    Login: 
+      description: Request body type for login
+      type: object
+      properties:
+        email:
+          description: Email of the holder
+          type: string
+          example: john@doe.com
+        password:
+          description: Password of the holder
+          type: string
+          example: 'p4ssw0rd'
+      required:
+        - email
+        - password
+        
     # Full models
     Account:
       description: Full model of an account object
@@ -883,6 +946,8 @@ components:
             write: allows modifying resources
             read: allows reading resources
 tags:
+  - name: Auth
+    description: Endpoints relating authorization. Login and register
   - name: Holders
     description: Endpoints relating holders. A holder is a person/entity with a portfolio of accounts
   - name: Accounts
