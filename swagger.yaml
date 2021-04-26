@@ -24,7 +24,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ArrayOfHolders'
         '401':
-          description: Authorization information is missing or invalid.
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
       tags:
         - Holders
     post:
@@ -47,7 +49,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ReturnBodyHolder'
         '401':
-          description: Authorization information is missing or invalid.
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
       tags:
         - Holders
   /holders/{id}:
@@ -74,9 +78,11 @@ paths:
         '400':
           description: The specified holder ID is invalid (not a number).
         '401':
-          description: Authorization information is missing or invalid.
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Holder with the specified ID was not found.
+          $ref: '#/components/responses/NotFound'
       tags:
         - Holders
     put:
@@ -109,9 +115,11 @@ paths:
         '400':
           description: The specified holder ID is invalid (not a number).
         '401':
-          description: Authorization information is missing or invalid.
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Holder with the specified ID was not found.
+          $ref: '#/components/responses/NotFound'
       tags:
         - Holders
     delete:
@@ -137,9 +145,11 @@ paths:
         '400':
           description: The specified holder ID is invalid (not a number).
         '401':
-          description: Authorization information is missing or invalid.
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Holder with the specified ID was not found.
+          $ref: '#/components/responses/NotFound'
       tags:
         - Holders
   /holders/{id}/accounts:
@@ -164,8 +174,12 @@ paths:
                 $ref: '#/components/schemas/ArrayOfAccounts'
         '400':
           description: The specified holder ID is invalid (not a number).
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Holder with the specified ID was not found.
+          $ref: '#/components/responses/NotFound'
       tags:
         - Holders
   /accounts:
@@ -179,7 +193,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ArrayOfAccounts'
         '401':
-          description: Authorization information is missing or invalid.
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
       tags:
         - Accounts
     post:
@@ -199,7 +215,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ReturnBodyAccount'
         '401':
-          description: Authorization information is missing or invalid.
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
       tags:
         - Accounts
   /accounts/{iban}:
@@ -225,9 +243,11 @@ paths:
         '400':
           description: The specified account IBAN is invalid (incorrect syntax).
         '401':
-          description: Authorization information is missing or invalid.
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Account with the specified IBAN was not found.
+          $ref: '#/components/responses/NotFound'
       tags:
         - Accounts
     put:
@@ -259,9 +279,11 @@ paths:
         '400':
           description: The specified account IBAN is invalid (incorrect syntax).
         '401':
-          description: Authorization information is missing or invalid.
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Account with the specified IBAN was not found.
+          $ref: '#/components/responses/NotFound'
       tags:
         - Accounts
     delete:
@@ -286,9 +308,11 @@ paths:
         '400':
           description: The specified account IBAN is invalid (incorrect syntax).
         '401':
-          description: Authorization information is missing or invalid.
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Account with the specified IBAN was not found.
+          $ref: '#/components/responses/NotFound'
       tags:
         - Accounts
   /transactions:
@@ -302,7 +326,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ArrayOfTransactions'
         '401':
-          description: Authorization information is missing or invalid.
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
       tags:
         - Transactions
     post:
@@ -328,7 +354,9 @@ paths:
                   - $ref: '#/components/schemas/ReturnBodyDeposit'
                   - $ref: '#/components/schemas/ReturnBodyWithdrawal'
         '401':
-          description: Authorization information is missing or invalid.
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
       tags:
         - Transactions
   /transaction/{id}:
@@ -355,9 +383,11 @@ paths:
         '400':
           description: The specified transaction ID is invalid (not a number).
         '401':
-          description: Authorization information is missing or invalid.
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Transaction with the specified ID was not found.
+          $ref: '#/components/responses/NotFound'
       tags:
         - Transactions
   /transactions/{id}/tan:
@@ -389,7 +419,11 @@ paths:
                     type: integer
                     example: 1234
         '401':
-          description: Authorization information is missing or invalid.
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
       tags:
         - Transactions
     post:
@@ -421,7 +455,7 @@ paths:
                 oneOf:
                   - $ref: '#/components/schemas/ReturnBodyTransaction'
         '401':
-          description: Authorization information is missing or invalid.
+          $ref: '#/components/responses/Unauthorized'
       tags:
         - Transactions
   
@@ -798,7 +832,46 @@ components:
         - Amount
         - TransactionType
         - fromAccount
+  
+    # Schema for error response body
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+        - code
+        - message
     
+  responses:
+    Unauthorized:
+      description: Authorization information is missing or invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Unauthorized request.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: The specified resource was not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    # Default definition of error statuses
+    default:
+      description: Unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
 
   securitySchemes:
     password:
