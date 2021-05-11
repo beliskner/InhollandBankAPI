@@ -592,7 +592,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
       tags:
         - Transactions
-  /transaction/{id}:
+  /transactions/{id}:
     get:
       summary: Gets Transaction by ID
       operationId: getTransactionById
