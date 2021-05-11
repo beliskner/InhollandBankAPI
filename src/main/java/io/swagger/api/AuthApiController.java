@@ -1,5 +1,6 @@
 package io.swagger.api;
 
+import io.swagger.annotations.Api;
 import io.swagger.model.Error;
 import io.swagger.model.InlineResponse201;
 import io.swagger.model.Login;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.constraints.*;
 import javax.validation.Valid;
@@ -34,8 +36,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-11T10:26:20.927Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-11T11:11:38.637Z[GMT]")
 @RestController
+@Api(tags = {"Auth"})
 public class AuthApiController implements AuthApi {
 
     private static final Logger log = LoggerFactory.getLogger(AuthApiController.class);

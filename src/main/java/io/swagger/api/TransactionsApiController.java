@@ -1,5 +1,6 @@
 package io.swagger.api;
 
+import io.swagger.annotations.Api;
 import io.swagger.model.ArrayOfTransactions;
 import io.swagger.model.Body;
 import io.swagger.model.Body1;
@@ -8,6 +9,7 @@ import io.swagger.model.InlineResponse200;
 import io.swagger.model.InlineResponse2001;
 import io.swagger.model.InlineResponse2011;
 import org.threeten.bp.LocalDate;
+import io.swagger.model.ReturnBodyTransaction;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -31,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.constraints.*;
 import javax.validation.Valid;
@@ -39,8 +42,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-11T10:26:20.927Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-11T11:11:38.637Z[GMT]")
 @RestController
+@Api(tags = {"Transactions"})
 public class TransactionsApiController implements TransactionsApi {
 
     private static final Logger log = LoggerFactory.getLogger(TransactionsApiController.class);
@@ -96,6 +100,21 @@ public class TransactionsApiController implements TransactionsApi {
         }
 
         return new ResponseEntity<InlineResponse200>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    public ResponseEntity<ReturnBodyTransaction> getTransactionById(@Min(1)@Parameter(in = ParameterIn.PATH, description = "Gets a transaction by ID. A transaction is a balance change between two accounts, one account that subtracts currency which is added to the opposing account. Each transaction is identified by a numeric `id`. ", required=true, schema=@Schema(allowableValues={  }, minimum="1"
+)) @PathVariable("id") Integer id) {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                return new ResponseEntity<ReturnBodyTransaction>(objectMapper.readValue("\"\"", ReturnBodyTransaction.class), HttpStatus.NOT_IMPLEMENTED);
+            } catch (IOException e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<ReturnBodyTransaction>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        return new ResponseEntity<ReturnBodyTransaction>(HttpStatus.NOT_IMPLEMENTED);
     }
 
     public ResponseEntity<InlineResponse2001> verifyTransactionByTan(@Min(1)@Parameter(in = ParameterIn.PATH, description = "", required=true, schema=@Schema(allowableValues={  }, minimum="1"

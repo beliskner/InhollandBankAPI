@@ -13,6 +13,7 @@ import io.swagger.model.InlineResponse200;
 import io.swagger.model.InlineResponse2001;
 import io.swagger.model.InlineResponse2011;
 import org.threeten.bp.LocalDate;
+import io.swagger.model.ReturnBodyTransaction;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -39,7 +40,7 @@ import javax.validation.constraints.*;
 import java.util.List;
 import java.util.Map;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-11T10:26:20.927Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-11T11:11:38.637Z[GMT]")
 @Validated
 public interface TransactionsApi {
 
@@ -86,6 +87,25 @@ public interface TransactionsApi {
         produces = { "application/json" }, 
         method = RequestMethod.GET)
     ResponseEntity<InlineResponse200> getTanByTransactionId(@Min(1)@Parameter(in = ParameterIn.PATH, description = "Gets a transaction by ID. A transaction is a balance change between two accounts, one account that subtracts currency which is added to the opposing account. Each transaction is identified by a numeric `id`. ", required=true, schema=@Schema(allowableValues={  }, minimum="1"
+)) @PathVariable("id") Integer id);
+
+
+    @Operation(summary = "Gets Transaction by ID", description = "", security = {
+        @SecurityRequirement(name = "bearerAuth")    }, tags={ "Transactions" })
+    @ApiResponses(value = { 
+        @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = ReturnBodyTransaction.class))),
+        
+        @ApiResponse(responseCode = "400", description = "The specified transaction ID is invalid (not a number)."),
+        
+        @ApiResponse(responseCode = "401", description = "Authorization information is missing or invalid.", content = @Content(schema = @Schema(implementation = Error.class))),
+        
+        @ApiResponse(responseCode = "403", description = "Unauthorized request.", content = @Content(schema = @Schema(implementation = Error.class))),
+        
+        @ApiResponse(responseCode = "404", description = "The specified resource was not found.", content = @Content(schema = @Schema(implementation = Error.class))) })
+    @RequestMapping(value = "/transactions/{id}",
+        produces = { "application/json" }, 
+        method = RequestMethod.GET)
+    ResponseEntity<ReturnBodyTransaction> getTransactionById(@Min(1)@Parameter(in = ParameterIn.PATH, description = "Gets a transaction by ID. A transaction is a balance change between two accounts, one account that subtracts currency which is added to the opposing account. Each transaction is identified by a numeric `id`. ", required=true, schema=@Schema(allowableValues={  }, minimum="1"
 )) @PathVariable("id") Integer id);
 
 

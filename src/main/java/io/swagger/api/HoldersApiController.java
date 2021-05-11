@@ -1,5 +1,6 @@
 package io.swagger.api;
 
+import io.swagger.annotations.Api;
 import io.swagger.model.ArrayOfAccounts;
 import io.swagger.model.ArrayOfHolders;
 import io.swagger.model.BodyDailyLimit;
@@ -38,8 +39,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-11T10:26:20.927Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-11T11:11:38.637Z[GMT]")
 @RestController
+@Api(tags = {"Holders"})
 public class HoldersApiController implements HoldersApi {
 
     private static final Logger log = LoggerFactory.getLogger(HoldersApiController.class);
