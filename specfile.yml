@@ -1,0 +1,1331 @@
+openapi: 3.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/beliskner/InhollandBankAPI/1.0.0
+info:
+  version: "1.0.0"
+  title: Inholland Bank API
+  description: >-
+    This is the swagger documentation of the Inholland Bank API
+security:
+  - bearerAuth: []         # use the same name as above
+  
+paths:
+  /auth/login:
+    post:
+      summary: Login a Holder
+      operationId: loginHolder
+      requestBody:
+        description: Request body to login a holder
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+      # We want to require no security schemes and override the globally define security scheme.
+      # To do that, we simply provide an empty array to the 'security' property.
+      security: [ ]
+      responses:
+        '201':
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                description: Return the account balance
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: 'AVeryCoolEncryptedToken'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      tags:
+        - Auth
+  /auth/logout:
+    post:
+      summary: Logs the user out by invalidating their token
+      operationId: logoutHolder
+      responses:
+        '200':
+          description: Logged out
+      tags:
+        - Auth
+  /holders:
+    get:
+      summary: Gets a list of all Holders (optional per role, per first name or per last name)
+      operationId: getAllHolders
+      parameters:
+        - in: query
+          name: role
+          required: false
+          schema:
+            type: string
+            enum:
+              - Customer
+              - Employee
+        - in: query
+          name: firstName
+          description: Filter by first name
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: lastName
+          description: Filter by last name
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: includeFrozen
+          description: Include frozen holders to the results of all holders or not
+          required: false
+          schema:
+            type: string
+            enum:
+              - No
+              - Yes
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArrayOfHolders'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      tags:
+        - Holders
+    post:
+      summary: Create a Holder
+      operationId: createHolder
+      requestBody:
+        description: Request body to create a new holder
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestBodyHolder'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnBodyHolder'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      tags:
+        - Holders
+  /holders/{id}:
+    get:
+      summary: Gets Holder by ID
+      operationId: getHolderById
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: >
+            Gets a holder by ID.
+            A holder is a person/entity with a portfolio of accounts
+            Each holder is identified by a numeric `id`.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnBodyHolder'
+        '400':
+          description: The specified holder ID is invalid (not a number).
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      tags:
+        - Holders
+    put:
+      summary: Updates a Holder by ID
+      operationId: updateHolderById
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: >
+            Updates a holder by ID.
+            A holder is a person/entity with a portfolio of accounts
+            Each holder is identified by a numeric `id`.
+      requestBody:
+        description: Request body to update a holder
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestBodyUpdateHolder'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnBodyHolder'
+        '400':
+          description: The specified holder ID is invalid (not a number).
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      tags:
+        - Holders
+    delete:
+      summary: Set Holder status to frozen by id
+      operationId: deleteHolderById
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: >
+            Deletes a holder by ID.
+            A holder is a person/entity with a portfolio of accounts
+            Each holder is identified by a numeric `id`.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnBodyHolder'
+        '400':
+          description: The specified holder ID is invalid (not a number).
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      tags:
+        - Holders
+  /holders/{id}/accounts:
+    get:
+      summary: Get accounts according to Holder ID
+      operationId: getAccountsByHolderId
+      parameters:
+        - in: query
+          name: includeClosed
+          description: Include closed accounts to the results of all the holder's accounts or not
+          required: false
+          schema:
+            type: string
+            enum:
+              - No
+              - Yes
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: >
+            A holder is a person/entity with a portfolio of accounts
+            Each holder is identified by a numeric `id`.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArrayOfAccounts'
+        '400':
+          description: The specified holder ID is invalid (not a number).
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      tags:
+        - Holders
+  /holders/{id}/dailylimit:
+    put:
+      summary: Change holder's daily limit according to holder ID and daily limit request body
+      operationId: updateDailyLimitByHolderId
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: >
+            Updates a holder by ID.
+            A holder is a person/entity with a portfolio of accounts
+            Each holder is identified by a numeric `id`.
+      requestBody:
+        description: Request body to update a holder
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BodyDailyLimit'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BodyDailyLimit'
+        '400':
+          description: The specified holder ID is invalid (not a number).
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      tags:
+        - Holders
+  /holders/{id}/status:
+    put:
+      summary: Change holder's status to frozen/unfrozen with status body
+      operationId: updateHolderStatusByHolderId
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: >
+            Updates a holder by ID.
+            A holder is a person/entity with a portfolio of accounts
+            Each holder is identified by a numeric `id`.
+      requestBody:
+        description: Request body to update a holder's status
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BodyHolderStatus'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BodyHolderStatus'
+        '400':
+          description: The specified holder ID is invalid (not a number).
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      tags:
+        - Holders
+  /accounts:
+    get:
+      summary: Gets a list of all Accounts
+      operationId: getAllAccounts
+      parameters:
+        - in: query
+          name: includeClosed
+          description: Include closed accounts to the results of all accounts or not
+          required: false
+          schema:
+            type: string
+            enum:
+              - No
+              - Yes
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArrayOfAccounts'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      tags:
+        - Accounts
+    post:
+      summary: Create an Account
+      operationId: createAccount
+      requestBody:
+        description: Request body to create a new account
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestBodyAccount'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnBodyAccount'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      tags:
+        - Accounts
+  /accounts/{iban}:
+    get:
+      summary: Gets Account by IBAN
+      operationId: getAccountByIban
+      parameters:
+        - in: path
+          name: iban
+          required: true
+          schema:
+            type: string
+          description: >
+            Gets an account by IBAN.
+            An account is a balance of currency owned by a holder.
+            Each account is identified by a string identifier `iban`.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnBodyAccount'
+        '400':
+          description: The specified account IBAN is invalid (incorrect syntax).
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      tags:
+        - Accounts
+    put:
+      summary: Updates an Account by IBAN
+      operationId: updateAccountByIban
+      parameters:
+        - in: path
+          name: iban
+          required: true
+          schema:
+            type: string
+          description: >
+            Updates an account by IBAN.
+            An account is a balance of currency owned by a holder.
+            Each account is identified by a string identifier `iban`.
+      requestBody:
+        description: Request body to update account
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestBodyUpdateAccount'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnBodyAccount'
+        '400':
+          description: The specified account IBAN is invalid (incorrect syntax).
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      tags:
+        - Accounts
+    delete:
+      summary: Set Account status to closed by IBAN
+      operationId: deleteAccountByIban
+      parameters:
+        - in: path
+          name: iban
+          required: true
+          schema:
+            type: string
+          description: >
+            Deletes an account by IBAN.
+            An account is a balance of currency owned by a holder.
+            Each account is identified by a string identifier `iban`.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnBodyAccount'
+        '400':
+          description: The specified account IBAN is invalid (incorrect syntax).
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      tags:
+        - Accounts
+  /accounts/{iban}/balance:
+    get:
+      summary: Gets balance by iban
+      operationId: getBalanceByIban
+      parameters:
+        - in: path
+          name: iban
+          required: true
+          schema:
+            type: string
+          description: >
+            Gets an account by IBAN.
+            An account is a balance of currency owned by a holder.
+            Each account is identified by a string identifier `iban`.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                description: Return the account balance
+                type: number
+                example: 500.25
+      tags:
+      - Accounts
+  /accounts/{iban}/maxtransfer:
+    put:
+      summary: Change account's daily max transfer according to IBAN and max transfer request body
+      operationId: updateMaxTransferByIban
+      parameters:
+        - in: path
+          name: iban
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: >
+            Gets an account by IBAN.
+            An account is a balance of currency owned by a holder.
+            Each account is identified by a string identifier `iban`.
+      requestBody:
+        description: Request body to update a holder
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaxTransfer'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaxTransfer'
+        '400':
+          description: The specified IBAN is invalid (not a number).
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      tags:
+        - Accounts
+  /accounts/{iban}/minbalance:
+    put:
+      summary: Change account's minimal balance according to IBAN and max transfer request body
+      operationId: updateMinBalanceByIban
+      parameters:
+        - in: path
+          name: iban
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: >
+            Gets an account by IBAN.
+            An account is a balance of currency owned by a holder.
+            Each account is identified by a string identifier `iban`.
+      requestBody:
+        description: Request body to update a holder
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MinBalance'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MinBalance'
+        '400':
+          description: The specified IBAN is invalid (not a number).
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      tags:
+        - Accounts
+  /accounts/{iban}/status:
+    put:
+      summary: Change account's minimal balance according to IBAN and max transfer request body
+      operationId: updateAccountStatusByIban
+      parameters:
+        - in: path
+          name: iban
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: >
+            Gets an account by IBAN.
+            An account is a balance of currency owned by a holder.
+            Each account is identified by a string identifier `iban`.
+      requestBody:
+        description: Request body to update an account's status
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BodyAccountStatus'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BodyAccountStatus'
+        '400':
+          description: The specified IBAN is invalid (not a number).
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      tags:
+        - Accounts
+  /transactions:
+    get:
+      summary: Gets a list of all Transactions
+      operationId: getAllTransactions
+      parameters:
+        - in: query
+          name: iban
+          description: Gets all transactions involving given IBAN
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: startDate
+          description: 'Filter transactions from a start date (if no end date is defined end date is datetime.now)'
+          required: false
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: endDate
+          description: 'Filter transactions until specified date (if no start date is defined, first transaction is start date)'
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArrayOfTransactions'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      tags:
+        - Transactions
+  /transactions/transfer:
+    post:
+      summary: Create a transfer Transaction between two accounts
+      operationId: createTransactionBetweenAccounts
+      requestBody:
+        description: Request body to create a new transfer transaction
+        required: true
+        content:
+          application/json:
+            schema:
+                $ref: '#/components/schemas/RequestBodyTransaction'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/ReturnBodyTransaction'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      tags:
+        - Transactions
+  /transactions/deposit:
+    post:
+      summary: Create a deposit Transaction
+      operationId: createTransactionForDeposit
+      requestBody:
+        description: Request body to create a new deposit transaction
+        required: true
+        content:
+          application/json:
+            schema:
+                $ref: '#/components/schemas/RequestBodyDeposit'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/ReturnBodyDeposit'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      tags:
+        - Transactions
+  /transactions/withdrawal:
+    post:
+      summary: Create a withdrawal Transaction
+      operationId: createTransactionForWithdrawal
+      requestBody:
+        description: Request body to create a new withdrawal transaction
+        required: true
+        content:
+          application/json:
+            schema:
+                $ref: '#/components/schemas/RequestBodyWithdrawal'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/ReturnBodyWithdrawal'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      tags:
+        - Transactions
+  /transactions/{id}:
+    get:
+      summary: Gets Transaction by ID
+      operationId: getTransactionById
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: >
+            Gets a transaction by ID.
+            A transaction is a balance change between two accounts, one account that subtracts currency which is added to the opposing account.
+            Each transaction is identified by a numeric `id`.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                # add performed holder b t w
+                $ref: '#/components/schemas/ReturnBodyTransaction'
+        '400':
+          description: The specified transaction ID is invalid (not a number).
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      tags:
+        - Transactions
+  /transactions/{id}/tan:
+    get:
+      summary: Gets TAN by transaction ID
+      operationId: getTanByTransactionId
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: >
+            Gets a transaction by ID.
+            A transaction is a balance change between two accounts, one account that subtracts currency which is added to the opposing account.
+            Each transaction is identified by a numeric `id`.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  TAN:
+                    type: integer
+                    example: 1234
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      tags:
+        - Transactions
+    post:
+      summary: Verify TAN to Approve transaction
+      operationId: verifyTransactionByTan
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        description: Request body to create a new transaction
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                TAN:
+                  type: integer
+                  example: 1234
+      responses:
+        '200':
+          description: TAN correct
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ReturnBodyTransaction'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      tags:
+        - Transactions
+components:
+  schemas:
+    # Login 
+    Login: 
+      description: Request body type for login
+      type: object
+      properties:
+        email:
+          description: Email of the holder
+          type: string
+          example: john@doe.com
+        password:
+          description: Password of the holder
+          type: string
+          example: 'p4ssw0rd'
+      required:
+        - email
+        - password
+        
+    # Full models
+    Account:
+      description: Full model of an account object
+      allOf:
+      - $ref: '#/components/schemas/BaseAccount'
+      - type: object
+        properties:
+          holderId:
+            description: The ID of the holder the account will be bound to
+            type: integer
+            example: 1
+          iban:
+            description: IBAN of the account
+            type: string
+            example: NL01INHO0000000002
+          balance:
+            description: Balance of the account
+            type: number
+            minimum: 0
+            example: 500.25
+    Holder:
+      description: Return body of the Holder
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseHolder'
+      - type: object
+        properties:
+          password:
+            type: string
+            example: 'p4ssw0rd'
+          salt:
+            type: string
+            example: '3487238472'
+          id:
+            type: integer
+            example: 1
+          status:
+            description: Status of holder. Can be Active or Frozen
+            type: string
+            enum:
+              - Active
+              - Frozen
+          accounts:
+            description: Array of accounts belonging to the Holder
+            type: array
+            items:
+              allOf:
+              - $ref: '#/components/schemas/BaseAccount'
+    Transaction:
+      description: Model of full transaction object
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseTransaction'
+      - type: object
+        properties:
+          performedHolder:
+            description: Holder ID performing the transaction
+            type: integer
+            example: 1
+          fromAccount:
+            description: IBAN of the account making the transaction
+            type: string
+            example: NL01INHO0000000002
+          toAccount:
+            description: IBAN of the account recieving the transaction
+            type: string
+            example: NL01INHO0000000003
+          id:
+            type: integer
+            example: 1
+          Datetime:
+            description: Datetime the transaction was executed
+            type: string
+            format: date-time
+            example: '2017-07-21T17:32:28Z'
+          Status:
+            description: Status of transaction. Can be Accepted or Pending.
+            type: string
+            enum:
+              - Approved
+              - Pending
+              - Disapproved
+          TAN:
+            description: Four integer TAN code to confirm transaction
+            type: integer
+            example: 1234
+    # Holder schemas
+    BodyDailyLimit:
+      description: Request and response body to change the daily limit of a holder
+      properties:
+        dailyLimit:
+          type: number
+          example: 500
+    BodyHolderStatus:
+      description: Request and response body to change the daily limit of a holder
+      properties:
+        status:
+          description: Status of holder. Can be Active or Frozen
+          type: string
+          enum:
+            - Active
+            - Frozen
+    ArrayOfHolders:
+      description: Array of return body of Holder
+      type: array
+      items:
+        $ref: '#/components/schemas/ReturnBodyHolder'
+    BaseHolder:
+      description: Base of holder
+      type: object
+      properties:
+        firstName:
+          description: First name of the holder
+          type: string
+          example: John
+        lastName:
+          description: Last name of the holder
+          type: string
+          example: Doe
+        email:
+          description: Email of the holder
+          type: string
+          example: john@doe.com
+        role:
+          description: Role of the holder (Employee or Customer)
+          type: string
+          enum:
+            - Employee
+            - Customer
+        dailyLimit:
+          description: Combined transaction amount cannot exeed this limit per day. Defined by Holder.
+          type: number
+          example: 5000
+    ReturnBodyHolder:
+      description: Return body of the Holder
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseHolder'
+      - type: object
+        properties:
+          id:
+            type: integer
+            example: 1
+          status:
+            description: Status of holder. Can be Active or Frozen
+            type: string
+            enum:
+              - Active
+              - Frozen
+          accounts:
+            description: Array of accounts belonging to the Holder
+            type: array
+            items:
+              allOf:
+              - $ref: '#/components/schemas/BaseAccount'
+    RequestBodyHolder:
+      description: Request body type of a Holder
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseHolder'
+      - type: object
+      properties:
+        password:
+          type: string
+          example: 'p4ssw0rd'
+      required:
+        - password
+        - email
+    RequestBodyUpdateHolder:
+      description: Request body update type of Holder
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseHolder'
+      - type: object
+    # Account schemas
+    MaxTransfer:
+      description: Request and response body to change the daily transfer of an account
+      properties:
+        maxTransfer:
+          type: number
+          example: 500
+    MinBalance:
+      description: Request and response body to change the minimal balance of an account
+      properties:
+        minBalance:
+          type: number
+          example: 500
+    ArrayOfAccounts:
+      description: Array of return body of Account
+      type: array
+      items:
+        $ref: '#/components/schemas/ReturnBodyAccount'
+    BodyAccountStatus:
+      description: Request and response body to change the status of an account belonging to a holder
+      properties:
+        status:
+          description: Status of account. Can be Open or Closed
+          type: string
+          enum:
+            - Open
+            - Closed
+    BaseAccount:
+      description: Base of account
+      type: object
+      properties:
+        accountType:
+          description: Type of the account (Current or Savings)
+          type: string
+          enum:
+            - Current
+            - Savings
+        status:
+          description: Status of account. Can be open or closed
+          type: string
+          enum:
+            - Open
+            - Closed
+        minBalance:
+          description: Balance cannot be lower than this amount. Defined by Holder.
+          type: number
+          example: -500.25
+        maxTransfer:
+          description: Single transaction cannot exeed this limit. Defined by Holder.
+          type: number
+          example: 500
+    ReturnBodyAccount:
+      description: Return body type of Account
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseAccount'
+      - type: object
+        properties:
+          holderId:
+            description: The ID of the holder the account will be bound to
+            type: integer
+            example: 1
+          iban:
+            description: IBAN of the account
+            type: string
+            example: NL01INHO0000000002
+          balance:
+            description: Balance of the account
+            type: number
+            minimum: 0
+            example: 500.25
+    RequestBodyAccount:
+      description: Request body type of account (Current or Savings)
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseAccount'
+      - type: object
+      properties:
+        holderId:
+          type: integer
+          example: 1
+      required:
+        - holderId
+        - accountType
+    RequestBodyUpdateAccount:
+      description: Request body type of account (Current or Savings)
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseAccount'
+      - type: object
+    # Transaction schemas
+    ArrayOfTransactions:
+      description: Array of return body of Transaction
+      type: array
+      items:
+        allOf:
+        - $ref: '#/components/schemas/ReturnBodyTransaction'
+        - $ref: '#/components/schemas/ReturnBodyDeposit'
+        - $ref: '#/components/schemas/ReturnBodyWithdrawal'
+    BaseTransaction:
+      description: Request body type of a Transaction
+      type: object
+      properties:
+        Amount:
+          description: Amount of currency performed in transaction
+          type: number
+          minimum: 0.01
+          example: 500.01
+        TransactionType:
+          description: Type of transaction. Can be Transfer or Refund.
+          type: string
+          enum:
+            - Transfer
+            - Refund
+            - Deposit
+            - Withdrawal
+    ReturnBodyTransaction:
+      description: Return body type of Transaction
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseTransaction'
+      - type: object
+        properties:
+          fromAccount:
+            description: IBAN of the account making the transaction
+            type: string
+            example: NL01INHO0000000002
+          toAccount:
+            description: IBAN of the account recieving the transaction
+            type: string
+            example: NL01INHO0000000003
+          id:
+            type: integer
+            example: 1
+          Datetime:
+            description: Datetime the transaction was executed
+            type: string
+            format: date-time
+            example: '2017-07-21T17:32:28Z'
+          Status:
+            description: Status of transaction. Can be Accepted or Pending.
+            type: string
+            enum:
+              - Approved
+              - Pending
+              - Disapproved
+          performedHolder:
+            description: Holder that performed this operation
+            type: integer
+            example: 1
+    ReturnBodyDeposit:
+      description: Return body type of Deposit
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseTransaction'
+      - type: object
+        properties:
+          toAccount:
+            description: IBAN of the account recieving the transaction
+            type: string
+            example: NL01INHO0000000003
+          id:
+            type: integer
+            example: 1
+          Datetime:
+            description: Datetime the transaction was executed
+            type: string
+            format: date-time
+            example: '2017-07-21T17:32:28Z'
+    ReturnBodyWithdrawal:
+      description: Return body type of Withdrawal
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseTransaction'
+      - type: object
+        properties:
+          fromAccount:
+            description: IBAN of the account making the transaction
+            type: string
+            example: NL01INHO0000000003
+          id:
+            type: integer
+            example: 1
+          Datetime:
+            description: Datetime the transaction was executed
+            type: string
+            format: date-time
+            example: '2017-07-21T17:32:28Z'
+    RequestBodyTransaction:
+      description: Request body type of a Transaction
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseTransaction'
+      - type: object
+        properties:
+          fromAccount:
+            description: IBAN of the account making the transaction
+            type: string
+            example: NL01INHO0000000002
+          toAccount:
+            description: IBAN of the account recieving the transaction
+            type: string
+            example: NL01INHO0000000003
+        required:
+          - performedHolder
+          - Amount
+          - TransactionType
+          - toAccount
+          - fromAccount
+    RequestBodyDeposit:
+      description: Request body type of a Deposit
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseTransaction'
+      - type: object
+        properties:
+          toAccount:
+            description: IBAN of the account recieving the transaction
+            type: string
+            example: NL01INHO0000000003
+      required:
+        - performedHolder
+        - Amount
+        - TransactionType
+        - toAccount
+    RequestBodyWithdrawal:
+      description: Request body type of a Withdrawal
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseTransaction'
+      - type: object
+        properties:
+          fromAccount:
+            description: IBAN of the account making the transaction
+            type: string
+            example: NL01INHO0000000002
+      required:
+        - performedHolder
+        - Amount
+        - TransactionType
+        - fromAccount
+    # Schema for error response body
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+        - code
+        - message
+  responses:
+    Unauthorized:
+      description: Authorization information is missing or invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Unauthorized request.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: The specified resource was not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    # Default definition of error statuses
+    default:
+      description: Unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT    # optional, arbitrary value for documentation purposes
+tags:
+  - name: Auth
+    description: Endpoints relating authorization. Login and register
+  - name: Holders
+    description: Endpoints relating holders. A holder is a person/entity with a portfolio of accounts
+  - name: Accounts
+    description: Endpoints related to accounts, these accounts are owned by holders
+  - name: Transactions
+    description: Endpoints relating to transactions
