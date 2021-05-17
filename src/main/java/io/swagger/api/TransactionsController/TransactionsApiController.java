@@ -5,6 +5,7 @@ import io.swagger.model.DTO.TransactionDTO.ArrayOfTransactions;
 import io.swagger.model.Body;
 import io.swagger.model.ResponseCodes.InlineResponse200;
 import io.swagger.model.ResponseCodes.InlineResponse2001;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.threeten.bp.LocalDate;
 import io.swagger.model.DTO.TransactionDTO.RequestBodyDeposit;
 import io.swagger.model.DTO.TransactionDTO.RequestBodyTransaction;
@@ -89,6 +90,7 @@ public class TransactionsApiController implements TransactionsApi {
         return new ResponseEntity<ReturnBodyWithdrawal>(HttpStatus.NOT_IMPLEMENTED);
     }
 
+    @PreAuthorize("hasRole('Employee')")
     public ResponseEntity<ArrayOfTransactions> getAllTransactions(@Parameter(in = ParameterIn.QUERY, description = "Gets all transactions involving given IBAN" ,schema=@Schema()) @Valid @RequestParam(value = "iban", required = false) String iban,@Parameter(in = ParameterIn.QUERY, description = "Filter transactions from a start date (if no end date is defined end date is datetime.now)" ,schema=@Schema()) @Valid @RequestParam(value = "startDate", required = false) LocalDate startDate,@Parameter(in = ParameterIn.QUERY, description = "Filter transactions until specified date (if no start date is defined, first transaction is start date)" ,schema=@Schema()) @Valid @RequestParam(value = "endDate", required = false) LocalDate endDate) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {

@@ -4,8 +4,11 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.model.Enums.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
+
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.validation.annotation.Validated;
 import javax.validation.Valid;
 
@@ -30,35 +33,9 @@ public class BaseHolder   {
   /**
    * Role of the holder (Employee or Customer)
    */
-  public enum RoleEnum {
-    EMPLOYEE("Employee"),
-    
-    CUSTOMER("Customer");
 
-    private String value;
-
-    RoleEnum(String value) {
-      this.value = value;
-    }
-
-    @Override
-    @JsonValue
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static RoleEnum fromValue(String text) {
-      for (RoleEnum b : RoleEnum.values()) {
-        if (String.valueOf(b.value).equals(text)) {
-          return b;
-        }
-      }
-      return null;
-    }
-  }
   @JsonProperty("role")
-  private RoleEnum role = null;
+  private Role role = null;
 
   @JsonProperty("dailyLimit")
   private BigDecimal dailyLimit = null;
@@ -120,7 +97,7 @@ public class BaseHolder   {
     this.email = email;
   }
 
-  public BaseHolder role(RoleEnum role) {
+  public BaseHolder role(Role role) {
     this.role = role;
     return this;
   }
@@ -131,11 +108,11 @@ public class BaseHolder   {
    **/
   @Schema(description = "Role of the holder (Employee or Customer)")
   
-    public RoleEnum getRole() {
+    public Role getRole() {
     return role;
   }
 
-  public void setRole(RoleEnum role) {
+  public void setRole(Role role) {
     this.role = role;
   }
 
