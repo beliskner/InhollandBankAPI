@@ -5,7 +5,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.model.BaseModels.BaseAccount;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
+
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.validation.annotation.Validated;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
 
@@ -17,10 +23,15 @@ import javax.validation.constraints.*;
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
 
 
+@Entity
 public class Account extends BaseAccount  {
   @JsonProperty("holderId")
   private Integer holderId = null;
 
+
+  @Id
+  @GeneratedValue(generator = "iban")
+  @GenericGenerator(name = "iban", strategy = "io.swagger.api.AccountsController.IbanGenerator")
   @JsonProperty("iban")
   private String iban = null;
 

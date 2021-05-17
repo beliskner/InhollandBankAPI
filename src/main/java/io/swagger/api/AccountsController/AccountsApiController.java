@@ -52,12 +52,9 @@ public class AccountsApiController implements AccountsApi {
     public ResponseEntity<ReturnBodyAccount> createAccount(@Parameter(in = ParameterIn.DEFAULT, description = "Request body to create a new account", required=true, schema=@Schema()) @Valid @RequestBody RequestBodyAccount body) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<ReturnBodyAccount>(objectMapper.readValue("\"\"", ReturnBodyAccount.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<ReturnBodyAccount>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+
+            accountsService.addAccount(body);
+
         }
 
         return new ResponseEntity<ReturnBodyAccount>(HttpStatus.NOT_IMPLEMENTED);
