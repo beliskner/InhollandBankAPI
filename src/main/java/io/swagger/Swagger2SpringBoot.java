@@ -1,11 +1,13 @@
 package io.swagger;
 
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.ExitCodeGenerator;
-import org.springframework.boot.SpringApplication;
+import io.swagger.api.AccountsController.AccountsRepo;
+import io.swagger.model.Account;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.*;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
+import org.springframework.stereotype.Component;
 import springfox.documentation.oas.annotations.EnableOpenApi;
 
 @SpringBootApplication
@@ -13,11 +15,19 @@ import springfox.documentation.oas.annotations.EnableOpenApi;
 @ComponentScan(basePackages = { "io.swagger", "io.swagger.api" , "io.swagger.configuration"})
 public class Swagger2SpringBoot implements CommandLineRunner {
 
+    @Autowired
+    AccountsRepo accountsRepo;
+
     @Override
     public void run(String... arg0) throws Exception {
         if (arg0.length > 0 && arg0[0].equals("exitcode")) {
             throw new ExitException();
         }
+
+        Account bank = new Account();
+        accountsRepo.save(bank);
+
+
     }
 
     public static void main(String[] args) throws Exception {
@@ -33,4 +43,6 @@ public class Swagger2SpringBoot implements CommandLineRunner {
         }
 
     }
+
+
 }
