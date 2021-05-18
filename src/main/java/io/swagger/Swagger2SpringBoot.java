@@ -2,6 +2,7 @@ package io.swagger;
 
 import io.swagger.api.AccountsController.AccountsRepo;
 import io.swagger.model.Account;
+import io.swagger.model.BaseModels.BaseAccount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.*;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -25,6 +26,7 @@ public class Swagger2SpringBoot implements CommandLineRunner {
         }
 
         Account bank = new Account();
+        bank.setStatus(BaseAccount.StatusEnum.CLOSED);
         accountsRepo.save(bank);
 
 
