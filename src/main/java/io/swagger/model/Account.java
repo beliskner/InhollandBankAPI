@@ -6,12 +6,9 @@ import io.swagger.model.BaseModels.BaseAccount;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 
-import org.hibernate.annotations.GenericGenerator;
 import org.springframework.validation.annotation.Validated;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
 
@@ -29,11 +26,7 @@ public class Account extends BaseAccount  {
   private Integer holderId = null;
 
 
-  @Id
-  @GeneratedValue(generator = "iban")
-  @GenericGenerator(name = "iban", strategy = "io.swagger.api.AccountsController.IbanGenerator")
-  @JsonProperty("iban")
-  private String iban = null;
+
 
   @JsonProperty("balance")
   private BigDecimal balance = null;
@@ -57,24 +50,15 @@ public class Account extends BaseAccount  {
     this.holderId = holderId;
   }
 
-  public Account iban(String iban) {
-    this.iban = iban;
-    return this;
-  }
+
 
   /**
    * IBAN of the account
    * @return iban
    **/
   @Schema(example = "NL01INHO0000000002", description = "IBAN of the account")
-  
-    public String getIban() {
-    return iban;
-  }
 
-  public void setIban(String iban) {
-    this.iban = iban;
-  }
+
 
   public Account balance(BigDecimal balance) {
     this.balance = balance;
