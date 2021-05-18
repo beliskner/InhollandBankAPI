@@ -1,6 +1,7 @@
 package io.swagger.api.AccountsController;
 
 import io.swagger.annotations.Api;
+import io.swagger.model.Account;
 import io.swagger.model.DTO.AccountDTO.ArrayOfAccounts;
 import java.math.BigDecimal;
 import io.swagger.model.DTO.AccountDTO.BodyAccountStatus;
@@ -53,11 +54,15 @@ public class AccountsApiController implements AccountsApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
 
-            accountsService.addAccount(body);
-
+            try {
+                return new ResponseEntity<ReturnBodyAccount>(accountsService.addAccount(body), HttpStatus.CREATED);
+            }
+            catch (Exception e){
+                return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
 
-        return new ResponseEntity<ReturnBodyAccount>(HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public ResponseEntity<ReturnBodyAccount> deleteAccountByIban(@Parameter(in = ParameterIn.PATH, description = "Deletes an account by IBAN. An account is a balance of currency owned by a holder. Each account is identified by a string identifier `iban`. ", required=true, schema=@Schema()) @PathVariable("iban") String iban) {

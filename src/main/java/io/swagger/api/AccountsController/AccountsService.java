@@ -5,6 +5,7 @@ import io.swagger.model.Account;
 import io.swagger.model.BaseModels.BaseAccount.AccountTypeEnum;
 import io.swagger.model.BaseModels.BaseAccount.StatusEnum;
 import io.swagger.model.DTO.AccountDTO.RequestBodyAccount;
+import io.swagger.model.DTO.AccountDTO.ReturnBodyAccount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,8 +19,7 @@ public class AccountsService {
     private AccountsRepo accountsRepo;
 
 
-    public Account addAccount(@Valid RequestBodyAccount body) {
-
+    public ReturnBodyAccount addAccount(@Valid RequestBodyAccount body) {
         StatusEnum status = body.getStatus();
         AccountTypeEnum accountType = body.getAccountType();
         Integer holderId = body.getHolderId();
@@ -35,8 +35,24 @@ public class AccountsService {
         acc.setBalance(new BigDecimal(0));
         acc.setMinBalance(minBalance);
         acc.setMaxTransfer(maxTransfer);
-        return accountsRepo.save(acc);
-        
+
+        accountsRepo.save(acc);
+
+        ReturnBodyAccount rba = new ReturnBodyAccount();
+        rba.setBalance(acc.getBalance());
+        rba.setHolderId(acc.getHolderId());
+        rba.setIban(acc.getIban());
+        rba.setAccountType(acc.getAccountType());
+        rba.setMinBalance(acc.getMinBalance());
+        rba.setStatus(acc.getStatus());
+
+        return rba;
+
+
+
+
+
+
     }
     public void updateAccount(@Valid RequestBodyAccount body) {
 
