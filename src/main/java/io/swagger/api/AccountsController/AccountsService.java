@@ -6,7 +6,6 @@ import io.swagger.model.BaseModels.BaseAccount.AccountTypeEnum;
 import io.swagger.model.BaseModels.BaseAccount.StatusEnum;
 import io.swagger.model.DTO.AccountDTO.RequestBodyAccount;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
@@ -19,13 +18,15 @@ public class AccountsService {
     private AccountsRepo accountsRepo;
 
 
-    public void addAccount(@Valid RequestBodyAccount body) {
+    public Account addAccount(@Valid RequestBodyAccount body) {
 
         StatusEnum status = body.getStatus();
         AccountTypeEnum accountType = body.getAccountType();
         Integer holderId = body.getHolderId();
         BigDecimal maxTransfer =  body.getMaxTransfer();
+        if (body.getMaxTransfer() == null){maxTransfer = new BigDecimal("500");}
         BigDecimal minBalance = body.getMinBalance();
+        if (body.getMinBalance() == null){minBalance = new BigDecimal("-500");}
 
         Account acc = new Account();
         acc.setStatus(status);
@@ -34,12 +35,8 @@ public class AccountsService {
         acc.setBalance(new BigDecimal(0));
         acc.setMinBalance(minBalance);
         acc.setMaxTransfer(maxTransfer);
-
-        accountsRepo.save(acc);
-
-
-
-
+        return accountsRepo.save(acc);
+        
     }
     public void updateAccount(@Valid RequestBodyAccount body) {
 
@@ -49,6 +46,7 @@ public class AccountsService {
         BigDecimal maxTransfer =  body.getMaxTransfer();
         BigDecimal minBalance = body.getMinBalance();
 
+
         Account acc = new Account();
         acc.setStatus(status);
         acc.setAccountType(accountType);
@@ -58,11 +56,5 @@ public class AccountsService {
         acc.setMaxTransfer(maxTransfer);
 
         accountsRepo.save(acc);
-
-        System.out.print("ff");
-
-
-
-
     }
 }
