@@ -38,6 +38,19 @@ public class Account extends BaseAccount  {
   @JsonProperty("balance")
   private BigDecimal balance = null;
 
+  @JsonProperty("type")
+  private String type = "normaal";
+
+  @JsonProperty("minBalans")
+  private Integer minBalans = -500;
+
+  @JsonProperty("maxBalans")
+  private Integer maxBalans = 500;
+
+
+  @JsonProperty("status")
+  private Enum status = null;
+
   public Account holderId(Integer holderId) {
     this.holderId = holderId;
     return this;
@@ -110,12 +123,13 @@ public class Account extends BaseAccount  {
     return Objects.equals(this.holderId, account.holderId) &&
         Objects.equals(this.iban, account.iban) &&
         Objects.equals(this.balance, account.balance) &&
+            Objects.equals(this.type, account.type) &&
         super.equals(o);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(holderId, iban, balance, super.hashCode());
+    return Objects.hash(holderId, iban, balance, type,super.hashCode());
   }
 
   @Override
@@ -126,6 +140,7 @@ public class Account extends BaseAccount  {
     sb.append("    holderId: ").append(toIndentedString(holderId)).append("\n");
     sb.append("    iban: ").append(toIndentedString(iban)).append("\n");
     sb.append("    balance: ").append(toIndentedString(balance)).append("\n");
+    sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("}");
     return sb.toString();
   }

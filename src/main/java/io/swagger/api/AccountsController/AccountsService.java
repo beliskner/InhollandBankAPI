@@ -37,6 +37,28 @@ public class AccountsService {
 
         accountsRepo.save(acc);
 
+
+
+
+    }
+    public void updateAccount(@Valid RequestBodyAccount body) {
+
+        StatusEnum status = body.getStatus();
+        AccountTypeEnum accountType = body.getAccountType();
+        Integer holderId = body.getHolderId();
+        BigDecimal maxTransfer =  body.getMaxTransfer();
+        BigDecimal minBalance = body.getMinBalance();
+
+        Account acc = new Account();
+        acc.setStatus(status);
+        acc.setAccountType(accountType);
+        acc.setHolderId(holderId);
+        acc.setBalance(new BigDecimal(0));
+        acc.setMinBalance(minBalance);
+        acc.setMaxTransfer(maxTransfer);
+
+        accountsRepo.save(acc);
+
         System.out.print("ff");
 
 
