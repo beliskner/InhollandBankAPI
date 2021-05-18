@@ -6,9 +6,9 @@ import io.swagger.model.BaseModels.BaseHolder;
 import org.springframework.security.core.GrantedAuthority;
 
 public enum Role implements GrantedAuthority {
-    EMPLOYEE("Employee"),
+    ROLE_EMPLOYEE("Employee"),
 
-    CUSTOMER("Customer");
+    ROLE_CUSTOMER("Customer");
 
     private String value;
 

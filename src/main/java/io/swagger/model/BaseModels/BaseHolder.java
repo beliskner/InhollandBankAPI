@@ -10,6 +10,8 @@ import java.math.BigDecimal;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.validation.annotation.Validated;
+
+import javax.persistence.MappedSuperclass;
 import javax.validation.Valid;
 
 /**
@@ -18,8 +20,7 @@ import javax.validation.Valid;
 @Schema(description = "Base of holder")
 @Validated
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
-
-
+@MappedSuperclass
 public class BaseHolder   {
   @JsonProperty("firstName")
   private String firstName = null;

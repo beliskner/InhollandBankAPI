@@ -22,6 +22,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private JwtTokenFilter jwtTokenFilter;
 
+    private static final String[] AUTH_WHITELIST = {
+            "/auth/login",
+            "/h2/**/**",
+            "/swagger-ui/**/**",
+            "/swagger-resources/**",
+            "/swagger-ui.html",
+            "/api-docs",
+            "webjars/**"
+    };
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
@@ -29,8 +39,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         http.authorizeRequests()
-                .antMatchers("/auth/login").permitAll()
-                .antMatchers("/h2/**/**").permitAll()
+                .antMatchers(AUTH_WHITELIST).permitAll()
                 .anyRequest().authenticated();
 
         http.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
@@ -38,9 +47,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/h2/**/**");
+        web.ignoring().antMatchers(AUTH_WHITELIST);
     }
-
 
 
     @Bean
