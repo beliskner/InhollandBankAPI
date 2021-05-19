@@ -4,11 +4,13 @@ import io.swagger.annotations.Api;
 import io.swagger.model.ResponseCodes.InlineResponse201;
 import io.swagger.model.DTO.AuthDTO.Login;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.service.HolderService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,6 +31,9 @@ public class AuthApiController implements AuthApi {
 
     private final HttpServletRequest request;
 
+    @Autowired
+    private HolderService holderService;
+
     @org.springframework.beans.factory.annotation.Autowired
     public AuthApiController(ObjectMapper objectMapper, HttpServletRequest request) {
         this.objectMapper = objectMapper;
@@ -39,7 +44,9 @@ public class AuthApiController implements AuthApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                return new ResponseEntity<InlineResponse201>(objectMapper.readValue("{\n  \"token\" : \"AVeryCoolEncryptedToken\"\n}", InlineResponse201.class), HttpStatus.NOT_IMPLEMENTED);
+                // return holderService.login(body.getEmail(), body.getPassword());
+                String token = holderService.login(body.getEmail(), body.getPassword());
+                return new ResponseEntity<InlineResponse201>(objectMapper.readValue(token, InlineResponse201.class), HttpStatus.NOT_IMPLEMENTED);
             } catch (IOException e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<InlineResponse201>(HttpStatus.INTERNAL_SERVER_ERROR);

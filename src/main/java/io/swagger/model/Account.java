@@ -6,6 +6,9 @@ import io.swagger.model.BaseModels.BaseAccount;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import org.springframework.validation.annotation.Validated;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
 
@@ -15,12 +18,13 @@ import javax.validation.constraints.*;
 @Schema(description = "Full model of an account object")
 @Validated
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
-
+@Entity
 
 public class Account extends BaseAccount  {
   @JsonProperty("holderId")
   private Integer holderId = null;
 
+  @Id
   @JsonProperty("iban")
   private String iban = null;
 
