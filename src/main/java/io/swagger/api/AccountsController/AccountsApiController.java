@@ -1,6 +1,7 @@
 package io.swagger.api.AccountsController;
 
 import io.swagger.annotations.Api;
+import io.swagger.api.helpers.MapListsHelper;
 import io.swagger.model.Account;
 import io.swagger.model.DTO.AccountDTO.ArrayOfAccounts;
 import java.math.BigDecimal;
@@ -30,6 +31,7 @@ import javax.validation.constraints.*;
 import javax.validation.Valid;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.List;
 
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
 @RestController
@@ -105,9 +107,11 @@ public class AccountsApiController implements AccountsApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                return new ResponseEntity<ArrayOfAccounts>(objectMapper.readValue("[ \"\", \"\" ]", ArrayOfAccounts.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
+                List<Account> accounts =  accountsService.getAllAccounts();
+                List<ReturnBodyAccount> returnBodyAccounts = MapListsHelper.mapList(accounts, ReturnBodyAccount.class);
+                return new ResponseEntity(returnBodyAccounts, HttpStatus.OK);
+            } catch (Exception e) {
+
                 return new ResponseEntity<ArrayOfAccounts>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }

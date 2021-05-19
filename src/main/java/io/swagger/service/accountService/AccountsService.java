@@ -12,6 +12,13 @@ import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
 import java.math.BigDecimal;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 @Service
 public class AccountsService {
@@ -68,5 +75,16 @@ public class AccountsService {
         acc.setMaxTransfer(maxTransfer);
 
         accountsRepo.save(acc);
+    }
+
+    public List<Account> getAllAccounts() {
+        Iterator iterator =  accountsRepo.findAll().iterator();
+        //List<Account> accounts = (List<Account>) StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false).collect(Collectors.toList());
+
+        Stream<Account> x = StreamSupport
+                .stream(Spliterators
+                        .spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
+
+       return  x.collect(Collectors.toList());
     }
 }
