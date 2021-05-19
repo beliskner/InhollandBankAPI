@@ -6,17 +6,26 @@ import io.swagger.model.BaseModels.BaseAccount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.*;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
 import springfox.documentation.oas.annotations.EnableOpenApi;
 
+import java.util.Arrays;
+
 @SpringBootApplication
 @EnableOpenApi
-@ComponentScan(basePackages = { "io.swagger", "io.swagger.api" , "io.swagger.configuration"})
+@ComponentScan(basePackages = { "io.swagger", "io.swagger.api" , "io.swagger.configuration", "io.swagger.api.helpers"})
 public class Swagger2SpringBoot implements CommandLineRunner {
 
     @Autowired
     AccountsRepo accountsRepo;
+
+    @Autowired
+    private ApplicationContext appContext;
+
+
+
 
     @Override
     public void run(String... arg0) throws Exception {
@@ -28,6 +37,15 @@ public class Swagger2SpringBoot implements CommandLineRunner {
         Account bank = new Account();
         bank.setStatus(BaseAccount.StatusEnum.CLOSED);
         accountsRepo.save(bank);
+
+
+        String[] beans = appContext.getBeanDefinitionNames();
+        Arrays.sort(beans);
+        for (String bean : beans) {
+            System.out.println(bean);
+        }
+
+
 
 
     }
