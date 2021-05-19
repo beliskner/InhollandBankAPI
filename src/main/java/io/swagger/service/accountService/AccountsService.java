@@ -20,7 +20,7 @@ public class AccountsService {
     private AccountsRepo accountsRepo;
 
 
-    public ReturnBodyAccount addAccount(@Valid RequestBodyAccount body) {
+    public Account addAccount(@Valid RequestBodyAccount body) {
         StatusEnum status = body.getStatus();
         AccountTypeEnum accountType = body.getAccountType();
         Integer holderId = body.getHolderId();
@@ -37,22 +37,17 @@ public class AccountsService {
         acc.setMinBalance(minBalance);
         acc.setMaxTransfer(maxTransfer);
 
-        accountsRepo.save(acc);
+        return accountsRepo.save(acc);
 
-        ReturnBodyAccount rba = new ReturnBodyAccount();
+
+
+/*        ReturnBodyAccount rba = new ReturnBodyAccount();
         rba.setBalance(acc.getBalance());
         rba.setHolderId(acc.getHolderId());
         rba.setIban(acc.getIban());
         rba.setAccountType(acc.getAccountType());
         rba.setMinBalance(acc.getMinBalance());
-        rba.setStatus(acc.getStatus());
-
-        return rba;
-
-
-
-
-
+        rba.setStatus(acc.getStatus());*/
 
     }
     public void updateAccount(@Valid RequestBodyAccount body) {

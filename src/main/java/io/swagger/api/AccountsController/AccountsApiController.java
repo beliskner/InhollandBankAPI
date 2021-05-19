@@ -15,6 +15,7 @@ import io.swagger.service.accountService.AccountsService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,8 @@ public class AccountsApiController implements AccountsApi {
 
     @Autowired
     AccountsService accountsService;
+    @Autowired
+    private ModelMapper mapper;
 
     private static final Logger log = LoggerFactory.getLogger(AccountsApiController.class);
 
@@ -56,7 +59,10 @@ public class AccountsApiController implements AccountsApi {
         if (accept != null && accept.contains("application/json")) {
 
             try {
-                return new ResponseEntity<ReturnBodyAccount>(accountsService.addAccount(body), HttpStatus.CREATED);
+
+                ReturnBodyAccount returnBodyAccount = mapper.map(accountsService.addAccount(body) ,ReturnBodyAccount.class);
+
+                return new ResponseEntity<ReturnBodyAccount>(returnBodyAccount, HttpStatus.CREATED);
             }
             catch (Exception e){
                 return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
