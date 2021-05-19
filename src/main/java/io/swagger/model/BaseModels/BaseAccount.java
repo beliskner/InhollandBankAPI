@@ -82,9 +82,10 @@ public class BaseAccount   {
    * Status of account. Can be open or closed
    */
   public enum StatusEnum {
-    OPEN("Open"),
+    CLOSED("Closed"),
+    OPEN("Open");
     
-    CLOSED("Closed");
+
 
     private String value;
 
