@@ -24,6 +24,7 @@ public class Swagger2SpringBoot implements CommandLineRunner {
             throw new ExitException();
         }
 
+        //iban is generated in accounts -> ibangenerator
         Account bank = new Account();
         bank.setStatus(BaseAccount.StatusEnum.CLOSED);
         accountsRepo.save(bank);

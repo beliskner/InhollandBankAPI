@@ -1,4 +1,4 @@
-package io.swagger.api.AccountsController;
+package io.swagger.service.accountService;
 
 
 import io.swagger.model.Account;
@@ -6,6 +6,7 @@ import io.swagger.model.BaseModels.BaseAccount.AccountTypeEnum;
 import io.swagger.model.BaseModels.BaseAccount.StatusEnum;
 import io.swagger.model.DTO.AccountDTO.RequestBodyAccount;
 import io.swagger.model.DTO.AccountDTO.ReturnBodyAccount;
+import io.swagger.repository.accountRepo.AccountsRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

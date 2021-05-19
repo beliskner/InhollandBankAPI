@@ -39,7 +39,7 @@ public class IbanGenerator implements IdentifierGenerator {
                 .max();
         // als er geen geldige ibans zijn doe dit
         if (!max.isPresent()) return COUNTRY_CODE + CONTROL_NUMBER + BANK_CODE + "0000000001";
-        //anders return max
+        //anders gebruik max om een nieuwe iban te genereren
         return COUNTRY_CODE + CONTROL_NUMBER + BANK_CODE + createAccountNumberFromLatestId(max.getAsLong());
 
     }
