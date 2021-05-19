@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import org.springframework.validation.annotation.Validated;
 
 import javax.persistence.Entity;
+import javax.persistence.Table;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
 
@@ -21,6 +22,7 @@ import javax.validation.constraints.*;
 
 
 @Entity
+@Table(name = "accounts")
 public class Account extends BaseAccount  {
   @JsonProperty("holderId")
   private Integer holderId = null;

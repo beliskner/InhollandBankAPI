@@ -1,12 +1,11 @@
-package io.swagger.service.accountService;
+package io.swagger.service.accounts;
 
 
 import io.swagger.model.Account;
 import io.swagger.model.BaseModels.BaseAccount.AccountTypeEnum;
 import io.swagger.model.BaseModels.BaseAccount.StatusEnum;
 import io.swagger.model.DTO.AccountDTO.RequestBodyAccount;
-import io.swagger.model.DTO.AccountDTO.ReturnBodyAccount;
-import io.swagger.repository.accountRepo.AccountsRepo;
+import io.swagger.repository.AccountsRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -77,9 +76,16 @@ public class AccountsService {
         accountsRepo.save(acc);
     }
 
-    public List<Account> getAllAccounts() {
-        Iterator iterator =  accountsRepo.findAll().iterator();
-        //List<Account> accounts = (List<Account>) StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false).collect(Collectors.toList());
+    public List<Account> getAllAccounts(@Valid String includeClosed) {
+        Iterator iterator =  null;
+
+        if (includeClosed.equals("Yes")){
+            iterator = accountsRepo.findAll().iterator();
+
+        }else {
+            iterator =  accountsRepo.findAllWhereStatusOpen().iterator();
+                    //accountsRepo.findAllWhereStatusOpen();
+        }
 
         Stream<Account> x = StreamSupport
                 .stream(Spliterators

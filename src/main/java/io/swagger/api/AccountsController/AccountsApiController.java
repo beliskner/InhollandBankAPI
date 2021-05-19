@@ -1,7 +1,7 @@
 package io.swagger.api.AccountsController;
 
 import io.swagger.annotations.Api;
-import io.swagger.api.helpers.MapListsHelper;
+import io.swagger.helpers.MapListsHelper;
 import io.swagger.model.Account;
 import io.swagger.model.DTO.AccountDTO.ArrayOfAccounts;
 import java.math.BigDecimal;
@@ -12,7 +12,7 @@ import io.swagger.model.DTO.AccountDTO.RequestBodyAccount;
 import io.swagger.model.DTO.AccountDTO.RequestBodyUpdateAccount;
 import io.swagger.model.DTO.AccountDTO.ReturnBodyAccount;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.service.accountService.AccountsService;
+import io.swagger.service.accounts.AccountsService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -50,7 +50,7 @@ public class AccountsApiController implements AccountsApi {
 
     private final HttpServletRequest request;
 
-    @org.springframework.beans.factory.annotation.Autowired
+    @Autowired
     public AccountsApiController(ObjectMapper objectMapper, HttpServletRequest request) {
         this.objectMapper = objectMapper;
         this.request = request;
@@ -107,7 +107,7 @@ public class AccountsApiController implements AccountsApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                List<Account> accounts =  accountsService.getAllAccounts();
+                List<Account> accounts =  accountsService.getAllAccounts(includeClosed);
                 List<ReturnBodyAccount> returnBodyAccounts =  MapListsHelper.mapList(accounts, ReturnBodyAccount.class);
                 return new ResponseEntity(returnBodyAccounts, HttpStatus.OK);
             } catch (Exception e) {

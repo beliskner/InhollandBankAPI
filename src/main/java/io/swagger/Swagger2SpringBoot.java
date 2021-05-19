@@ -1,8 +1,8 @@
 package io.swagger;
 
-import io.swagger.repository.accountRepo.AccountsRepo;
 import io.swagger.model.Account;
 import io.swagger.model.BaseModels.BaseAccount;
+import io.swagger.repository.AccountsRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.*;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,7 +15,7 @@ import java.util.Arrays;
 
 @SpringBootApplication
 @EnableOpenApi
-@ComponentScan(basePackages = { "io.swagger", "io.swagger.api" , "io.swagger.configuration", "io.swagger.api.helpers"})
+@ComponentScan(basePackages = { "io.swagger", "io.swagger.api" , "io.swagger.configuration", "io.swagger.helpers"})
 public class Swagger2SpringBoot implements CommandLineRunner {
 
     @Autowired

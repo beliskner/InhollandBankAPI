@@ -31,7 +31,7 @@ public class BaseAccount   {
 
   @Id
   @GeneratedValue(generator = "iban")
-  @GenericGenerator(name = "iban", strategy = "io.swagger.api.AccountsController.IbanGenerator")
+  @GenericGenerator(name = "iban", strategy = "io.swagger.service.accounts.IbanGenerator")
   @JsonProperty("iban")
   public String iban = null;
 

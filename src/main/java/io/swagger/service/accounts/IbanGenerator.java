@@ -1,4 +1,4 @@
-package io.swagger.api.AccountsController;
+package io.swagger.service.accounts;
 
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
