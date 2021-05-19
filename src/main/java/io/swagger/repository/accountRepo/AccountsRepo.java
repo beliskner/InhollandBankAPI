@@ -1,4 +1,4 @@
-package io.swagger.api.AccountsController;
+package io.swagger.repository.accountRepo;
 
 import io.swagger.model.Account;
 import org.springframework.data.repository.CrudRepository;
