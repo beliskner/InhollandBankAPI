@@ -78,6 +78,7 @@ public class AccountsApiController implements AccountsApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
+                Account accounts = accountsService.deleteAccount(iban);
                 return new ResponseEntity<ReturnBodyAccount>(objectMapper.readValue("\"\"", ReturnBodyAccount.class), HttpStatus.NOT_IMPLEMENTED);
             } catch (IOException e) {
                 log.error("Couldn't serialize response for content type application/json", e);
@@ -167,6 +168,8 @@ public class AccountsApiController implements AccountsApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
+
+                Account accounts = accountsService.updateMaxAccount(iban,Maxbalance);
                 return new ResponseEntity<MaxTransfer>(objectMapper.readValue("{\n  \"maxTransfer\" : 500\n}", MaxTransfer.class), HttpStatus.NOT_IMPLEMENTED);
             } catch (IOException e) {
                 log.error("Couldn't serialize response for content type application/json", e);
@@ -182,6 +185,7 @@ public class AccountsApiController implements AccountsApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
+                Account accounts = accountsService.updateMinAccount(iban,MinTransfer);
                 return new ResponseEntity<MinBalance>(objectMapper.readValue("{\n  \"minBalance\" : 500\n}", MinBalance.class), HttpStatus.NOT_IMPLEMENTED);
             } catch (IOException e) {
                 log.error("Couldn't serialize response for content type application/json", e);

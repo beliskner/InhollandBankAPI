@@ -42,26 +42,30 @@ public class AccountsService {
         return accountsRepo.save(acc);
 
     }
-    public void updateAccount(@Valid RequestBodyAccount body) {
+    public Account deleteAccount(@Valid String selecIban) {
+        Account byIban = accountsRepo.findById(selecIban).get();
+        byIban.setStatus(StatusEnum.CLOSED);
+        accountsRepo.save(byIban);
 
-        StatusEnum status = body.getStatus();
-        AccountTypeEnum accountType = body.getAccountType();
-        Integer holderId = body.getHolderId();
-        BigDecimal maxTransfer =  body.getMaxTransfer();
-        BigDecimal minBalance = body.getMinBalance();
-
-
-        Account acc = new Account();
-        acc.setStatus(status);
-        acc.setAccountType(accountType);
-        acc.setHolderId(holderId);
-        acc.setBalance(new BigDecimal(0));
-        acc.setMinBalance(minBalance);
-        acc.setMaxTransfer(maxTransfer);
-
-        accountsRepo.save(acc);
     }
+    public void updateMaxAccount(@Valid String selecIban,@Valid BigDecimal max) {
+        Account byIban = accountsRepo.findById(selecIban).get();
+        byIban.setMaxTransfer(max);
+        accountsRepo.save(byIban);
 
+    }
+    public void updateMinAccount(@Valid String selecIban,@Valid BigDecimal min) {
+        Account byIban = accountsRepo.findById(selecIban).get();
+        byIban.setMinBalance(min);
+        accountsRepo.save(byIban);
+
+    }
+    public void updateBalanceAccount(@Valid String selecIban,@Valid BigDecimal balances) {
+        Account byIban = accountsRepo.findById(selecIban).get();
+        byIban.setBalance(balances);
+        accountsRepo.save(byIban);
+
+    }
     public List<Account> getAllAccounts(@Valid String includeClosed) {
         Iterator iterator =  null;
 
