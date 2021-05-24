@@ -9,12 +9,17 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.validation.annotation.Validated;
+
+import javax.persistence.*;
 import javax.validation.Valid;
 
 /**
  * Return body of the Holder
  */
+@Entity
 @Schema(description = "Return body of the Holder")
 @Validated
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
@@ -27,6 +32,8 @@ public class Holder extends BaseHolder  {
   @JsonProperty("salt")
   private String salt = null;
 
+  @Id
+  @GeneratedValue
   @JsonProperty("id")
   private Integer id = null;
 
@@ -65,7 +72,8 @@ public class Holder extends BaseHolder  {
 
   @JsonProperty("accounts")
   @Valid
-  private List<Object> accounts = null;
+  @OneToMany(mappedBy = "holderId")
+  private List<Account> accounts = null;
 
   public Holder password(String password) {
     this.password = password;
@@ -143,14 +151,15 @@ public class Holder extends BaseHolder  {
     this.status = status;
   }
 
-  public Holder accounts(List<Object> accounts) {
+
+  public Holder accounts(List<Account> accounts) {
     this.accounts = accounts;
     return this;
   }
 
-  public Holder addAccountsItem(Object accountsItem) {
+  public Holder addAccountsItem(Account accountsItem) {
     if (this.accounts == null) {
-      this.accounts = new ArrayList<Object>();
+      this.accounts = new ArrayList<Account>();
     }
     this.accounts.add(accountsItem);
     return this;
@@ -162,11 +171,11 @@ public class Holder extends BaseHolder  {
    **/
   @Schema(description = "Array of accounts belonging to the Holder")
   
-    public List<Object> getAccounts() {
+    public List<Account> getAccounts() {
     return accounts;
   }
 
-  public void setAccounts(List<Object> accounts) {
+  public void setAccounts(List<Account> accounts) {
     this.accounts = accounts;
   }
 

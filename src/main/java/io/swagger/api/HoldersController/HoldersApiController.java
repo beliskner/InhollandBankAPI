@@ -1,6 +1,7 @@
 package io.swagger.api.HoldersController;
 
 import io.swagger.annotations.Api;
+import io.swagger.helpers.MapListsHelper;
 import io.swagger.model.DTO.AccountDTO.ArrayOfAccounts;
 import io.swagger.model.DTO.HolderDTO.ArrayOfHolders;
 import io.swagger.model.DTO.HolderDTO.BodyDailyLimit;
@@ -9,13 +10,19 @@ import io.swagger.model.DTO.HolderDTO.RequestBodyHolder;
 import io.swagger.model.DTO.HolderDTO.RequestBodyUpdateHolder;
 import io.swagger.model.DTO.HolderDTO.ReturnBodyHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.model.Holder;
+import io.swagger.service.HolderService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,6 +32,7 @@ import javax.validation.constraints.*;
 import javax.validation.Valid;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.List;
 
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
 @RestController
@@ -36,6 +44,9 @@ public class HoldersApiController implements HoldersApi {
     private final ObjectMapper objectMapper;
 
     private final HttpServletRequest request;
+
+    @Autowired
+    private HolderService holderService;
 
     @org.springframework.beans.factory.annotation.Autowired
     public HoldersApiController(ObjectMapper objectMapper, HttpServletRequest request) {
@@ -88,14 +99,21 @@ public class HoldersApiController implements HoldersApi {
         return new ResponseEntity<ArrayOfAccounts>(HttpStatus.NOT_IMPLEMENTED);
     }
 
+    @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<ArrayOfHolders> getAllHolders(@Parameter(in = ParameterIn.QUERY, description = "" ,schema=@Schema(allowableValues={ "Customer", "Employee" }
 )) @Valid @RequestParam(value = "role", required = false) String role,@Parameter(in = ParameterIn.QUERY, description = "Filter by first name" ,schema=@Schema()) @Valid @RequestParam(value = "firstName", required = false) String firstName,@Parameter(in = ParameterIn.QUERY, description = "Filter by last name" ,schema=@Schema()) @Valid @RequestParam(value = "lastName", required = false) String lastName,@Parameter(in = ParameterIn.QUERY, description = "Include frozen holders to the results of all holders or not" ,schema=@Schema(allowableValues={ "No", "Yes" }
 )) @Valid @RequestParam(value = "includeFrozen", required = false) String includeFrozen) {
         String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
+        // TODO: accept contains is now always */*, fix later
+        if (accept != null  ) { // && accept.contains("application/json")
             try {
-                return new ResponseEntity<ArrayOfHolders>(objectMapper.readValue("[ \"\", \"\" ]", ArrayOfHolders.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                String name = authentication.getName();
+                System.out.println(name);
+                List<Holder> holders = holderService.getAllHolders();
+                List<ReturnBodyHolder> returnBodyHolders = MapListsHelper.mapList(holders, ReturnBodyHolder.class);
+                return new ResponseEntity(returnBodyHolders, HttpStatus.OK);
+            } catch (Exception e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<ArrayOfHolders>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
