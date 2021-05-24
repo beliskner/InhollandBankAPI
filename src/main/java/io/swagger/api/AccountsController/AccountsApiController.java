@@ -24,7 +24,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.*;
 import javax.validation.Valid;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -175,10 +174,9 @@ public class AccountsApiController implements AccountsApi {
         if (accept != null && accept.contains("application/json")) {
             try {
 
-                Account accounts = accountsService.updateMaxAccount(iban,body);
-
-                return new ResponseEntity<MaxTransfer>(objectMapper.readValue("{\n  \"maxTransfer\" : 500\n}", MaxTransfer.class), HttpStatus.OK);
-            } catch (IOException e) {
+                MaxTransfer maxTransfer =  accountsService.updateMaxTransferByIban(iban, body);
+                return new ResponseEntity<MaxTransfer>(maxTransfer, HttpStatus.OK);
+            } catch (Exception e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<MaxTransfer>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
