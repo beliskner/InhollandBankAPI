@@ -42,10 +42,9 @@ public class AuthApiController implements AuthApi {
 
     public ResponseEntity<InlineResponse201> loginHolder(@Parameter(in = ParameterIn.DEFAULT, description = "Request body to login a holder", required=true, schema=@Schema()) @Valid @RequestBody Login body) {
         String accept = request.getHeader("Accept");
-        System.out.println(body);
-        System.out.println(accept.contains("application/json"));
         if (accept != null) { //&& accept.contains("application/json")
             String token = holderService.login(body.getEmail(), body.getPassword());
+            System.out.println(token);
             if(token != null ) {
                 // return holderService.login(body.getEmail(), body.getPassword());
                 return new ResponseEntity<InlineResponse201>(HttpStatus.OK);
