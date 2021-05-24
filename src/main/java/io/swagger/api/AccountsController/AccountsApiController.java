@@ -164,12 +164,12 @@ public class AccountsApiController implements AccountsApi {
     }
 
     public ResponseEntity<MaxTransfer> updateMaxTransferByIban(@Min(1)@Parameter(in = ParameterIn.PATH, description = "Gets an account by IBAN. An account is a balance of currency owned by a holder. Each account is identified by a string identifier `iban`. ", required=true, schema=@Schema(allowableValues={  }, minimum="1"
-)) @PathVariable("iban") Integer iban,@Parameter(in = ParameterIn.DEFAULT, description = "Request body to update a holder", required=true, schema=@Schema()) @Valid @RequestBody MaxTransfer body) {
+)) @PathVariable("iban") String iban,@Parameter(in = ParameterIn.DEFAULT, description = "Request body to update a holder", required=true, schema=@Schema()) @Valid @RequestBody MaxTransfer body) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
 
-                Account accounts = accountsService.updateMaxAccount(iban,Maxbalance);
+                Account accounts = accountsService.updateMaxAccount(iban,body);
                 return new ResponseEntity<MaxTransfer>(objectMapper.readValue("{\n  \"maxTransfer\" : 500\n}", MaxTransfer.class), HttpStatus.NOT_IMPLEMENTED);
             } catch (IOException e) {
                 log.error("Couldn't serialize response for content type application/json", e);
@@ -181,11 +181,11 @@ public class AccountsApiController implements AccountsApi {
     }
 
     public ResponseEntity<MinBalance> updateMinBalanceByIban(@Min(1)@Parameter(in = ParameterIn.PATH, description = "Gets an account by IBAN. An account is a balance of currency owned by a holder. Each account is identified by a string identifier `iban`. ", required=true, schema=@Schema(allowableValues={  }, minimum="1"
-)) @PathVariable("iban") Integer iban,@Parameter(in = ParameterIn.DEFAULT, description = "Request body to update a holder", required=true, schema=@Schema()) @Valid @RequestBody MinBalance body) {
+)) @PathVariable("iban") String iban,@Parameter(in = ParameterIn.DEFAULT, description = "Request body to update a holder", required=true, schema=@Schema()) @Valid @RequestBody MinBalance body) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                Account accounts = accountsService.updateMinAccount(iban,MinTransfer);
+//                Account accounts = accountsService.updateMinAccount(iban,MinTransfer);
                 return new ResponseEntity<MinBalance>(objectMapper.readValue("{\n  \"minBalance\" : 500\n}", MinBalance.class), HttpStatus.NOT_IMPLEMENTED);
             } catch (IOException e) {
                 log.error("Couldn't serialize response for content type application/json", e);

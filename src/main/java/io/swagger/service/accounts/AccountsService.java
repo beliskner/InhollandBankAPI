@@ -2,6 +2,8 @@ package io.swagger.service.accounts;
 import io.swagger.model.Account;
 import io.swagger.model.BaseModels.BaseAccount.AccountTypeEnum;
 import io.swagger.model.BaseModels.BaseAccount.StatusEnum;
+import io.swagger.model.DTO.AccountDTO.MaxTransfer;
+import io.swagger.model.DTO.AccountDTO.MinBalance;
 import io.swagger.model.DTO.AccountDTO.RequestBodyAccount;
 import io.swagger.repository.AccountsRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +31,7 @@ public class AccountsService {
         //TODO: DEFAULT WAARDES IN MODEL ZETTEN.
         if (body.getMaxTransfer() == null){maxTransfer = new BigDecimal("500");}
         BigDecimal minBalance = body.getMinBalance();
-        if (body.getMinBalance() == null){minBalance = new BigDecimal("-500");}
+        if (body.getMinBalance() == null){minBalance = new BigDecimal("-9900");}
 
         Account acc = new Account();
         acc.setStatus(status);
@@ -45,19 +47,19 @@ public class AccountsService {
     public Account deleteAccount(@Valid String selecIban) {
         Account byIban = accountsRepo.findById(selecIban).get();
         byIban.setStatus(StatusEnum.CLOSED);
-        accountsRepo.save(byIban);
+        return accountsRepo.save(byIban);
 
     }
-    public void updateMaxAccount(@Valid String selecIban,@Valid BigDecimal max) {
+    public Account updateMaxAccount(@Valid String selecIban, MaxTransfer max) {
         Account byIban = accountsRepo.findById(selecIban).get();
-        byIban.setMaxTransfer(max);
-        accountsRepo.save(byIban);
+        byIban.setMaxTransfer(max.getMaxTransfer());
+        return accountsRepo.save(byIban);
 
     }
-    public void updateMinAccount(@Valid String selecIban,@Valid BigDecimal min) {
+    public Account updateMinAccount(@Valid String selecIban,@Valid BigDecimal min) {
         Account byIban = accountsRepo.findById(selecIban).get();
         byIban.setMinBalance(min);
-        accountsRepo.save(byIban);
+        return accountsRepo.save(byIban);
 
     }
     public void updateBalanceAccount(@Valid String selecIban,@Valid BigDecimal balances) {
