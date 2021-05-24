@@ -8,15 +8,18 @@
         <outputRelativeToContentRoot value="true" />
         <module name="swagger-spring" />
         <module name="InhollandBankAPI2" />
+        <module name="InhollandBankAPI" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="InhollandBankAPI" target="8" />
       <module name="InhollandBankAPI2" target="8" />
       <module name="swagger-spring" target="8" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="InhollandBankAPI" options="-parameters" />
       <module name="InhollandBankAPI2" options="-parameters" />
       <module name="swagger-spring" options="-parameters" />
     </option>

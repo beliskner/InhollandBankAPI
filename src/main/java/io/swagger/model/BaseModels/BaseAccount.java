@@ -6,7 +6,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
+
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.validation.annotation.Validated;
+
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
 import javax.validation.Valid;
 
 /**
@@ -17,10 +23,31 @@ import javax.validation.Valid;
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
 
 
+@MappedSuperclass
 public class BaseAccount   {
   /**
    * Type of the account (Current or Savings)
    */
+
+  @Id
+  @GeneratedValue(generator = "iban")
+  @GenericGenerator(name = "iban", strategy = "io.swagger.service.accounts.IbanGenerator")
+  @JsonProperty("iban")
+  public String iban = null;
+
+  public BaseAccount iban(String iban) {
+    this.iban = iban;
+    return this;
+  }
+  public String getIban() {
+    return iban;
+  }
+
+  public void setIban(String iban) {
+    this.iban = iban;
+  }
+
+
   public enum AccountTypeEnum {
     CURRENT("Current"),
     
@@ -55,9 +82,10 @@ public class BaseAccount   {
    * Status of account. Can be open or closed
    */
   public enum StatusEnum {
-    OPEN("Open"),
+    CLOSED("Closed"),
+    OPEN("Open");
     
-    CLOSED("Closed");
+
 
     private String value;
 

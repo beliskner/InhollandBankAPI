@@ -15,7 +15,7 @@ import javax.validation.Valid;
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
 
 
-public class MinBalance   {
+public class MinBalance {
   @JsonProperty("minBalance")
   private BigDecimal minBalance = null;
 
