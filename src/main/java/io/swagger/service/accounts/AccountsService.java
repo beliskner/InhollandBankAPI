@@ -10,10 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import javax.validation.Valid;
 import java.math.BigDecimal;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Spliterator;
-import java.util.Spliterators;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -44,6 +41,13 @@ public class AccountsService {
         return accountsRepo.save(acc);
 
     }
+
+    public Optional<Account> getAccountByIban(String iban){
+
+        return accountsRepo.findById(iban);
+
+    }
+
     public Account deleteAccount(@Valid String selecIban) {
         Account byIban = accountsRepo.findById(selecIban).get();
         byIban.setStatus(StatusEnum.CLOSED);
