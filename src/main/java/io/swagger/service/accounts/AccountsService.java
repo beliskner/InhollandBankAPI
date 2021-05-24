@@ -3,7 +3,9 @@ import io.swagger.model.Account;
 import io.swagger.model.BaseModels.BaseAccount.AccountTypeEnum;
 import io.swagger.model.BaseModels.BaseAccount.StatusEnum;
 import io.swagger.model.DTO.AccountDTO.MaxTransfer;
+import io.swagger.model.DTO.AccountDTO.MinBalance;
 import io.swagger.model.DTO.AccountDTO.RequestBodyAccount;
+import io.swagger.model.DTO.AccountDTO.RequestBodyUpdateAccount;
 import io.swagger.repository.AccountsRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -47,8 +49,14 @@ public class AccountsService {
 
     }
 
-    public Account deleteAccount(@Valid String selecIban) {
-        Account byIban = accountsRepo.findById(selecIban).get();
+    public Account deleteAccount(@Valid String selectIban) {
+        Account byIban = accountsRepo.findById(selectIban).get();
+        byIban.setStatus(StatusEnum.CLOSED);
+        return accountsRepo.save(byIban);
+
+    }
+    public Account updateStatusAccount(@Valid String selectIban) {
+        Account byIban = accountsRepo.findById(selectIban).get();
         byIban.setStatus(StatusEnum.CLOSED);
         return accountsRepo.save(byIban);
 
@@ -63,16 +71,17 @@ public class AccountsService {
         return newMax;
     }
 
-    public Account updateMinAccount(@Valid String selecIban,@Valid BigDecimal min) {
-        Account byIban = accountsRepo.findById(selecIban).get();
-        byIban.setMinBalance(min);
-        return accountsRepo.save(byIban);
+    public MinBalance updateMinAccount(@Valid String selecIban, MinBalance min) {
+        Account account = accountsRepo.findById(selecIban).get();
+        BigDecimal negativeBalance = min.getMinBalance();
+        account.setMinBalance(negativeBalance.negate());
+        MinBalance newMin = new MinBalance();
+        newMin.setMinBalance(account.getMinBalance());
+        accountsRepo.save(account);
+        return newMin;
 
     }
-    public void updateBalanceAccount(@Valid String selecIban,@Valid BigDecimal balances) {
-        Account byIban = accountsRepo.findById(selecIban).get();
-        byIban.setBalance(balances);
-        accountsRepo.save(byIban);
+    public void updateBalanceAccount(@Valid String selectIban,@Valid RequestBodyUpdateAccount balances) {
 
     }
     public List<Account> getAllAccounts(String includeClosed) {

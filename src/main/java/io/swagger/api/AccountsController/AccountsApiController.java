@@ -141,6 +141,7 @@ public class AccountsApiController implements AccountsApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
+//                Account accounts = accountsService.updateStatusAccount(iban,body);
                 return new ResponseEntity<ReturnBodyAccount>(objectMapper.readValue("\"\"", ReturnBodyAccount.class), HttpStatus.NOT_IMPLEMENTED);
             } catch (IOException e) {
                 log.error("Couldn't serialize response for content type application/json", e);
@@ -156,6 +157,7 @@ public class AccountsApiController implements AccountsApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
+                Account accounts = accountsService.deleteAccount(iban);
                 return new ResponseEntity<BodyAccountStatus>(objectMapper.readValue("{\n  \"status\" : \"Open\"\n}", BodyAccountStatus.class), HttpStatus.NOT_IMPLEMENTED);
             } catch (IOException e) {
                 log.error("Couldn't serialize response for content type application/json", e);
@@ -185,13 +187,13 @@ public class AccountsApiController implements AccountsApi {
     }
 
     public ResponseEntity<MinBalance> updateMinBalanceByIban(@Parameter(in = ParameterIn.PATH, description = "Gets an account by IBAN. An account is a balance of currency owned by a holder. Each account is identified by a string identifier `iban`. ", required=true, schema=@Schema(allowableValues={  }
-)) @PathVariable("iban") String iban,@Parameter(in = ParameterIn.DEFAULT, description = "Request body to update a holder", required=true, schema=@Schema()) @Valid @RequestBody MinBalance body) {
+)) @PathVariable("iban") String iban, @Parameter(in = ParameterIn.DEFAULT, description = "Request body to update a holder", required=true, schema=@Schema()) @Valid @RequestBody MinBalance body) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-//                Account accounts = accountsService.updateMinAccount(iban,MinTransfer);
-                return new ResponseEntity<MinBalance>(objectMapper.readValue("{\n  \"minBalance\" : 500\n}", MinBalance.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
+                MinBalance minBalance =  accountsService.updateMinAccount(iban, body);
+                return new ResponseEntity<MinBalance>(minBalance, HttpStatus.OK);
+            } catch (Exception e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<MinBalance>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
