@@ -6,9 +6,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.validation.annotation.Validated;
 
 /**
- * Return the account balance
+ * Return the token
  */
-@Schema(description = "Return the account balance")
+@Schema(description = "Return the token")
 @Validated
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
 

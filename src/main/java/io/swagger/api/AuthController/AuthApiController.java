@@ -42,14 +42,17 @@ public class AuthApiController implements AuthApi {
 
     public ResponseEntity<InlineResponse201> loginHolder(@Parameter(in = ParameterIn.DEFAULT, description = "Request body to login a holder", required=true, schema=@Schema()) @Valid @RequestBody Login body) {
         String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
+        System.out.println(body);
+        System.out.println(accept.contains("application/json"));
+        if (accept != null) { //&& accept.contains("application/json")
+            String token = holderService.login(body.getEmail(), body.getPassword());
+            if(token != null ) {
                 // return holderService.login(body.getEmail(), body.getPassword());
-                String token = holderService.login(body.getEmail(), body.getPassword());
-                return new ResponseEntity<InlineResponse201>(objectMapper.readValue(token, InlineResponse201.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<InlineResponse201>(HttpStatus.INTERNAL_SERVER_ERROR);
+                return new ResponseEntity<InlineResponse201>(HttpStatus.OK);
+//                return new ResponseEntity<InlineResponse201>(token, HttpStatus.OK), HttpStatus.OK);
+            } else {
+                log.error("Couldn't serialize response for content type application/json");
+                return new ResponseEntity<InlineResponse201>(HttpStatus.NOT_FOUND);
             }
         }
 
