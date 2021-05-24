@@ -35,15 +35,15 @@ public class Swagger2SpringBoot implements CommandLineRunner {
 
         //iban is generated in accounts -> ibangenerator
         Account bank = new Account();
-        bank.setStatus(BaseAccount.StatusEnum.CLOSED);
+        bank.setStatus(BaseAccount.StatusEnum.OPEN);
         accountsRepo.save(bank);
 
 
         String[] beans = appContext.getBeanDefinitionNames();
         Arrays.sort(beans);
-        for (String bean : beans) {
-            System.out.println(bean);
-        }
+//        for (String bean : beans) {
+//            System.out.println(bean);
+//        }
 
 
 

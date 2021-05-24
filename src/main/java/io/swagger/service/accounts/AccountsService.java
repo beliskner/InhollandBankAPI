@@ -80,8 +80,7 @@ public class AccountsService {
 
     public MinBalance updateMinAccount(@Valid String selecIban, MinBalance min) {
         Account account = accountsRepo.findById(selecIban).get();
-        BigDecimal negativeBalance = min.getMinBalance();
-        account.setMinBalance(negativeBalance.negate());
+        account.setMinBalance(min.getMinBalance());
         MinBalance newMin = new MinBalance();
         newMin.setMinBalance(account.getMinBalance());
         accountsRepo.save(account);
