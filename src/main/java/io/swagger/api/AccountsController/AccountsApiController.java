@@ -152,8 +152,8 @@ public class AccountsApiController implements AccountsApi {
         return new ResponseEntity<ReturnBodyAccount>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    public ResponseEntity<BodyAccountStatus> updateAccountStatusByIban(@Min(1)@Parameter(in = ParameterIn.PATH, description = "Gets an account by IBAN. An account is a balance of currency owned by a holder. Each account is identified by a string identifier `iban`. ", required=true, schema=@Schema(allowableValues={  }, minimum="1"
-)) @PathVariable("iban") Integer iban,@Parameter(in = ParameterIn.DEFAULT, description = "Request body to update an account's status", required=true, schema=@Schema()) @Valid @RequestBody BodyAccountStatus body) {
+    @Override
+    public ResponseEntity<BodyAccountStatus> updateAccountStatusByIban(String iban, @Valid BodyAccountStatus body) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
@@ -167,24 +167,26 @@ public class AccountsApiController implements AccountsApi {
         return new ResponseEntity<BodyAccountStatus>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    public ResponseEntity<MaxTransfer> updateMaxTransferByIban(@Min(1)@Parameter(in = ParameterIn.PATH, description = "Gets an account by IBAN. An account is a balance of currency owned by a holder. Each account is identified by a string identifier `iban`. ", required=true, schema=@Schema(allowableValues={  }, minimum="1"
+
+
+    public ResponseEntity<MaxTransfer> updateMaxTransferByIban(@Parameter(in = ParameterIn.PATH, description = "Gets an account by IBAN. An account is a balance of currency owned by a holder. Each account is identified by a string identifier `iban`. ", required=true, schema=@Schema(allowableValues={  }
 )) @PathVariable("iban") String iban,@Parameter(in = ParameterIn.DEFAULT, description = "Request body to update a holder", required=true, schema=@Schema()) @Valid @RequestBody MaxTransfer body) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
 
                 Account accounts = accountsService.updateMaxAccount(iban,body);
-                return new ResponseEntity<MaxTransfer>(objectMapper.readValue("{\n  \"maxTransfer\" : 500\n}", MaxTransfer.class), HttpStatus.NOT_IMPLEMENTED);
+
+                return new ResponseEntity<MaxTransfer>(objectMapper.readValue("{\n  \"maxTransfer\" : 500\n}", MaxTransfer.class), HttpStatus.OK);
             } catch (IOException e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<MaxTransfer>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-
         return new ResponseEntity<MaxTransfer>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    public ResponseEntity<MinBalance> updateMinBalanceByIban(@Min(1)@Parameter(in = ParameterIn.PATH, description = "Gets an account by IBAN. An account is a balance of currency owned by a holder. Each account is identified by a string identifier `iban`. ", required=true, schema=@Schema(allowableValues={  }, minimum="1"
+    public ResponseEntity<MinBalance> updateMinBalanceByIban(@Parameter(in = ParameterIn.PATH, description = "Gets an account by IBAN. An account is a balance of currency owned by a holder. Each account is identified by a string identifier `iban`. ", required=true, schema=@Schema(allowableValues={  }
 )) @PathVariable("iban") String iban,@Parameter(in = ParameterIn.DEFAULT, description = "Request body to update a holder", required=true, schema=@Schema()) @Valid @RequestBody MinBalance body) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {

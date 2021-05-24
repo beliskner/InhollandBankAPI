@@ -72,10 +72,10 @@ public class AccountsService {
         accountsRepo.save(byIban);
 
     }
-    public List<Account> getAllAccounts(@Valid String includeClosed) {
+    public List<Account> getAllAccounts(String includeClosed) {
         Iterator iterator =  null;
 
-        if (includeClosed.equals("Yes")){
+        if (includeClosed == null ||  includeClosed.equals("Yes")){
             iterator = accountsRepo.findAll().iterator();
 
         }else {
