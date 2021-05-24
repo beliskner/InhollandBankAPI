@@ -75,9 +75,11 @@ public class AccountsApiController implements AccountsApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                Account accounts = accountsService.deleteAccount(iban);
-                return new ResponseEntity<ReturnBodyAccount>(objectMapper.readValue("\"\"", ReturnBodyAccount.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
+                Account account = accountsService.deleteAccount(iban);
+                ReturnBodyAccount returnBodyAccount = mapper.map(account,ReturnBodyAccount.class);
+
+                return new ResponseEntity<ReturnBodyAccount>(returnBodyAccount, HttpStatus.OK);
+            } catch (Exception e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<ReturnBodyAccount>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
@@ -141,9 +143,11 @@ public class AccountsApiController implements AccountsApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-//                Account accounts = accountsService.updateStatusAccount(iban,body);
-                return new ResponseEntity<ReturnBodyAccount>(objectMapper.readValue("\"\"", ReturnBodyAccount.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
+                Account account =  accountsService.updateStatusAccount(iban, body);
+                ReturnBodyAccount returnBodyAccount = mapper.map(account,ReturnBodyAccount.class);
+
+                return new ResponseEntity<ReturnBodyAccount>(returnBodyAccount, HttpStatus.OK);
+            } catch (Exception e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<ReturnBodyAccount>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
@@ -157,9 +161,11 @@ public class AccountsApiController implements AccountsApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                Account accounts = accountsService.deleteAccount(iban);
-                return new ResponseEntity<BodyAccountStatus>(objectMapper.readValue("{\n  \"status\" : \"Open\"\n}", BodyAccountStatus.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
+                Account account = accountsService.deleteAccount(iban);
+                BodyAccountStatus bodyAccount = mapper.map(account,BodyAccountStatus.class);
+
+                return new ResponseEntity<BodyAccountStatus>(bodyAccount, HttpStatus.OK);
+            } catch (Exception e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<BodyAccountStatus>(HttpStatus.INTERNAL_SERVER_ERROR);
             }

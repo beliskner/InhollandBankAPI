@@ -2,10 +2,7 @@ package io.swagger.service.accounts;
 import io.swagger.model.Account;
 import io.swagger.model.BaseModels.BaseAccount.AccountTypeEnum;
 import io.swagger.model.BaseModels.BaseAccount.StatusEnum;
-import io.swagger.model.DTO.AccountDTO.MaxTransfer;
-import io.swagger.model.DTO.AccountDTO.MinBalance;
-import io.swagger.model.DTO.AccountDTO.RequestBodyAccount;
-import io.swagger.model.DTO.AccountDTO.RequestBodyUpdateAccount;
+import io.swagger.model.DTO.AccountDTO.*;
 import io.swagger.repository.AccountsRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,10 +52,20 @@ public class AccountsService {
         return accountsRepo.save(byIban);
 
     }
-    public Account updateStatusAccount(@Valid String selectIban) {
-        Account byIban = accountsRepo.findById(selectIban).get();
-        byIban.setStatus(StatusEnum.CLOSED);
-        return accountsRepo.save(byIban);
+    public Account updateStatusAccount(@Valid String selectIban, RequestBodyUpdateAccount body) {
+        StatusEnum status = body.getStatus();
+        AccountTypeEnum accountType = body.getAccountType();
+        BigDecimal maxTransfer =  body.getMaxTransfer();
+        BigDecimal minBalance = body.getMinBalance();
+        Account acc = accountsRepo.findById(selectIban).get();
+        acc.setStatus(status);
+        acc.setAccountType(accountType);
+        acc.setBalance(new BigDecimal(0));
+        acc.setMinBalance(minBalance);
+        acc.setMaxTransfer(maxTransfer);
+
+        accountsRepo.save(acc);
+        return acc;
 
     }
 
@@ -81,9 +88,7 @@ public class AccountsService {
         return newMin;
 
     }
-    public void updateBalanceAccount(@Valid String selectIban,@Valid RequestBodyUpdateAccount balances) {
 
-    }
     public List<Account> getAllAccounts(String includeClosed) {
         Iterator iterator =  null;
 
