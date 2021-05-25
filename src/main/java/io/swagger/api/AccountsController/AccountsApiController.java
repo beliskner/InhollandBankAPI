@@ -117,7 +117,6 @@ public class AccountsApiController implements AccountsApi {
                 List<ReturnBodyAccount> returnBodyAccounts =  MapListsHelper.mapList(accounts, ReturnBodyAccount.class);
                 return new ResponseEntity(returnBodyAccounts, HttpStatus.OK);
             } catch (Exception e) {
-
                 return new ResponseEntity<ArrayOfAccounts>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
