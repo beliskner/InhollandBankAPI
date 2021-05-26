@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import java.math.BigDecimal;
@@ -97,6 +98,13 @@ public class HolderService {
         List<Holder> holders = holderRepository.findAll();
 
         return holders;
+    }
+
+    public Optional<Holder> getHolderById(Long id) {
+
+        Optional<Holder> holder = holderRepository.findById(id);
+
+        return holder;
     }
 
     public Holder add(Holder holder) {
