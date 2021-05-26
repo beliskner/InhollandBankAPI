@@ -6,13 +6,12 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
-public interface HolderRepository extends CrudRepository<Holder, Long> {
+public interface HolderRepository extends CrudRepository<Holder, Integer> {
     Holder findByEmail(String email);
 
     List<Holder> findAll();
 
-    Optional<Holder> findById(Long id);
+    Holder findById(int id);
 }

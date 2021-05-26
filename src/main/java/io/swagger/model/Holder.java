@@ -1,15 +1,20 @@
 package io.swagger.model;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.model.BaseModels.BaseHolder;
+import io.swagger.model.Enums.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.validation.annotation.Validated;
 
@@ -19,9 +24,9 @@ import javax.validation.Valid;
 /**
  * Return body of the Holder
  */
-@Entity
 @Schema(description = "Return body of the Holder")
 @Validated
+@Entity
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
 
 

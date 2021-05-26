@@ -3,11 +3,14 @@ import io.swagger.model.Account;
 import io.swagger.model.BaseModels.BaseAccount.AccountTypeEnum;
 import io.swagger.model.BaseModels.BaseAccount.StatusEnum;
 import io.swagger.model.DTO.AccountDTO.*;
+import io.swagger.model.Enums.Role;
+import io.swagger.model.Holder;
 import io.swagger.repository.AccountsRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import javax.validation.Valid;
 import java.math.BigDecimal;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -104,5 +107,22 @@ public class AccountsService {
                         .spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
 
        return  x.collect(Collectors.toList());
+    }
+
+    public List<Account> getAllAccountsByHolderId(Integer id) {
+        List<Account> accounts = accountsRepo.findByHolderId(id);
+
+        return accounts;
+    }
+
+    public void addAccountForBank() {
+        Account account = new Account();
+        account.setAccountType(AccountTypeEnum.CURRENT);
+        account.setMaxTransfer(new BigDecimal("5000.00"));
+        account.setMinBalance(new BigDecimal("-5000.00"));
+        account.setStatus(StatusEnum.OPEN);
+        account.setBalance(new BigDecimal("1000000.25"));
+        account.setHolderId(1);
+        accountsRepo.save(account);
     }
 }

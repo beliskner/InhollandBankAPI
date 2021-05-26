@@ -1,24 +1,21 @@
-package io.swagger.service;
+package io.swagger.service.Holders;
 
 import io.swagger.model.Account;
 import io.swagger.model.Enums.Role;
 import io.swagger.model.Holder;
 import io.swagger.repository.HolderRepository;
 import io.swagger.security.JwtTokenProvider;
+import io.swagger.service.accounts.AccountsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.logging.Logger;
 
 import java.math.BigDecimal;
 import java.security.SecureRandom;
@@ -37,6 +34,9 @@ public class HolderService {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private AccountsService accountsService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -67,9 +67,9 @@ public class HolderService {
 
         Holder holder = new Holder();
         holder.setDailyLimit(new BigDecimal("250"));
-        holder.setEmail("john@doe.com");
-        holder.setFirstName("rene");
-        holder.setLastName("bankman");
+        holder.setEmail("bank@inholland.nl");
+        holder.setFirstName("Inholland");
+        holder.setLastName("Bank");
         holder.setRole(Role.ROLE_EMPLOYEE);
         String password = "p4ssw0rd";
         holder.setSalt(salt.toString());
@@ -77,6 +77,7 @@ public class HolderService {
         String fullPassword = password + salt;
         holder.setPassword(passwordEncoder.encode(fullPassword));
         List<Account> accounts = emptyList();
+        System.out.println(accounts);
         holder.setAccounts(accounts);
         holderRepository.save(holder);
 
@@ -100,9 +101,15 @@ public class HolderService {
         return holders;
     }
 
-    public Optional<Holder> getHolderById(Long id) {
+    public Holder getHolderByEmail(String email) {
+        Holder holder = holderRepository.findByEmail(email);
 
-        Optional<Holder> holder = holderRepository.findById(id);
+        return holder;
+    }
+
+    public Holder getHolderById(int id) {
+
+        Holder holder = holderRepository.findById(id);
 
         return holder;
     }
