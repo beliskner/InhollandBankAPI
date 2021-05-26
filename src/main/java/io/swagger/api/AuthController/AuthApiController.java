@@ -4,7 +4,7 @@ import io.swagger.annotations.Api;
 import io.swagger.model.ResponseCodes.InlineResponse201;
 import io.swagger.model.DTO.AuthDTO.Login;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.service.HolderService;
+import io.swagger.service.Holders.HolderService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -15,12 +15,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.math.BigDecimal;
 
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
 @RestController

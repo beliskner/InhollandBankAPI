@@ -11,7 +11,7 @@ import io.swagger.model.DTO.HolderDTO.RequestBodyUpdateHolder;
 import io.swagger.model.DTO.HolderDTO.ReturnBodyHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.model.Holder;
-import io.swagger.service.HolderService;
+import io.swagger.service.Holders.HolderService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;

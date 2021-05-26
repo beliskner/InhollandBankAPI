@@ -3,14 +3,9 @@ package io.swagger;
 import io.swagger.model.Account;
 import io.swagger.model.BaseModels.BaseAccount;
 import io.swagger.repository.AccountsRepo;
+import io.swagger.service.accounts.AccountsService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.*;
-import io.swagger.api.HoldersController.HoldersApiController;
-import io.swagger.model.Enums.Role;
-import io.swagger.model.Holder;
-import io.swagger.repository.HolderRepository;
-import io.swagger.service.HolderService;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.service.Holders.HolderService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
@@ -20,12 +15,9 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.ComponentScan;
 
 import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Service;
 import springfox.documentation.oas.annotations.EnableOpenApi;
 
 import java.util.Arrays;
-
-import java.math.BigDecimal;
 
 @SpringBootApplication
 @EnableOpenApi
@@ -33,7 +25,7 @@ import java.math.BigDecimal;
 public class Swagger2SpringBoot implements CommandLineRunner {
 
     @Autowired
-    AccountsRepo accountsRepo;
+    AccountsService accountsService;
 
     @Autowired
     private ApplicationContext appContext;
@@ -50,21 +42,8 @@ public class Swagger2SpringBoot implements CommandLineRunner {
             throw new ExitException();
         }
 
-        //iban is generated in accounts -> ibangenerator
-        Account bank = new Account();
-        bank.setStatus(BaseAccount.StatusEnum.OPEN);
-        accountsRepo.save(bank);
-
-
         String[] beans = appContext.getBeanDefinitionNames();
         Arrays.sort(beans);
-//        for (String bean : beans) {
-//            System.out.println(bean);
-//        }
-
-
-
-
     }
 
     public static void main(String[] args) throws Exception {
@@ -73,8 +52,8 @@ public class Swagger2SpringBoot implements CommandLineRunner {
 
     @EventListener(ApplicationReadyEvent.class)
     public void doSomethingAfterStartup() {
-        // Add holders to test API with
         holderService.addInitialHolders();
+        accountsService.addAccountForBank();
     }
 
     class ExitException extends RuntimeException implements ExitCodeGenerator {

@@ -8,6 +8,10 @@ import io.swagger.model.BaseModels.BaseTransaction;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.threeten.bp.OffsetDateTime;
 import org.springframework.validation.annotation.Validated;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.validation.Valid;
 
 /**
@@ -15,6 +19,7 @@ import javax.validation.Valid;
  */
 @Schema(description = "Model of full transaction object")
 @Validated
+@Entity
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
 
 
@@ -28,6 +33,8 @@ public class Transaction extends BaseTransaction  {
   @JsonProperty("toAccount")
   private String toAccount = null;
 
+  @Id
+  @GeneratedValue
   @JsonProperty("id")
   private Integer id = null;
 
