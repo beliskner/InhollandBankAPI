@@ -10,7 +10,7 @@ import org.springframework.validation.annotation.Validated;
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
 
 
-public class InlineResponse2001  implements OneOfinlineResponse2001 {
+public class InlineResponse2001 {
 
   @Override
   public boolean equals(java.lang.Object o) {

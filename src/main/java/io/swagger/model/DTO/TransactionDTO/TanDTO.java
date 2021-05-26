@@ -8,10 +8,9 @@ import org.springframework.validation.annotation.Validated;
 /**
  * TanDTO
  */
+@Schema(description = "Return the TAN")
 @Validated
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
-
-
 public class TanDTO {
   @JsonProperty("TAN")
   private Integer TAN = null;
@@ -26,8 +25,7 @@ public class TanDTO {
    * @return TAN
    **/
   @Schema(example = "1234", description = "")
-  
-    public Integer getTAN() {
+  public Integer getTAN() {
     return TAN;
   }
 
@@ -56,7 +54,7 @@ public class TanDTO {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class InlineResponse200 {\n");
+    sb.append("class TanDTO {\n");
     sb.append("    TAN: ").append(toIndentedString(TAN)).append("\n");
     sb.append("}");
     return sb.toString();

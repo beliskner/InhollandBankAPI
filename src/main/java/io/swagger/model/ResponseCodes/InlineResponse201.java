@@ -11,8 +11,6 @@ import org.springframework.validation.annotation.Validated;
 @Schema(description = "Return the token")
 @Validated
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
-
-
 public class InlineResponse201   {
   @JsonProperty("token")
   private String token = null;
@@ -27,8 +25,7 @@ public class InlineResponse201   {
    * @return token
    **/
   @Schema(example = "AVeryCoolEncryptedToken", description = "")
-  
-    public String getToken() {
+  public String getToken() {
     return token;
   }
 

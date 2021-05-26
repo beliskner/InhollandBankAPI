@@ -115,8 +115,15 @@ public class TransactionService {
         Optional<Account> optionalAccount = accountsService.getAccountByIban(iban);
         if(optionalAccount.isPresent()) {
             Account account = optionalAccount.get();
+            BigDecimal oldBalance = account.getBalance();
             account.setBalance(account.getBalance().add(balanceUpdate));
             accountsRepo.save(account);
+            Optional<Account> toBeCheckAccount = accountsService.getAccountByIban(account.getIban());
+            if(toBeCheckAccount.isPresent() && toBeCheckAccount.get().getBalance() != account.getBalance()) {
+                account.setBalance(oldBalance);
+                accountsRepo.save(account);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Account balance for account: " + toBeCheckAccount.get().getIban() + " could not be updated");
+            }
         }
     }
 
@@ -124,8 +131,15 @@ public class TransactionService {
         Optional<Account> optionalAccount = accountsService.getAccountByIban(iban);
         if (optionalAccount.isPresent()) {
             Account account = optionalAccount.get();
+            BigDecimal oldBalance = account.getBalance();
             account.setBalance(account.getBalance().subtract(balanceUpdate));
             accountsRepo.save(account);
+            Optional<Account> toBeCheckAccount = accountsService.getAccountByIban(account.getIban());
+            if(toBeCheckAccount.isPresent() && toBeCheckAccount.get().getBalance() != account.getBalance()) {
+                account.setBalance(oldBalance);
+                accountsRepo.save(account);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Account balance for account: " + toBeCheckAccount.get().getIban() + " could not be updated");
+            }
         }
     }
 

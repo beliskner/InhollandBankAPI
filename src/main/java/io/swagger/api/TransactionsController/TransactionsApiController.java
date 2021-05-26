@@ -2,6 +2,7 @@ package io.swagger.api.TransactionsController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.Api;
+import io.swagger.model.Account;
 import io.swagger.model.BaseModels.BaseTransaction;
 import io.swagger.model.DTO.TransactionDTO.ArrayOfTransactions;
 import io.swagger.model.Body;
@@ -77,23 +78,26 @@ public class TransactionsApiController implements TransactionsApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
+                Optional<Account> fromAccount = accountsService.getAccountByIban(body.getFromAccount());
                 if(body.getToAccount() != null && !accountsService.getAccountByIban(body.getToAccount()).isPresent()) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No account with IBAN " + body.getToAccount() + " found.");
-                }
-                if (body.getFromAccount() != null && !accountsService.getAccountByIban(body.getFromAccount()).isPresent()) {
+                } else if (body.getFromAccount() != null && !fromAccount.isPresent()) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No account with IBAN " + body.getFromAccount() + " found.");
-                }
-                if(body.getTransactionType().toString() != BaseTransaction.TransactionTypeEnum.TRANSFER.toString() && body.getTransactionType().toString() != BaseTransaction.TransactionTypeEnum.REFUND.toString()) {
+                } else if(body.getTransactionType().toString() != BaseTransaction.TransactionTypeEnum.TRANSFER.toString() && body.getTransactionType().toString() != BaseTransaction.TransactionTypeEnum.REFUND.toString()) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Specified transaction type: '"+ body.getTransactionType().toString() + "' incorrect, must be Transfer or Refund");
                 }
                 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
                 int performedHolderId = holderService.getHolderByEmail(authentication.getName()).getId();
-                Transaction transaction = transactionService.createTransaction(body, performedHolderId, authCheck.hasRole("EMPLOYEE"));
-                if(transaction != null) {
-                    String json = objectMapper.writeValueAsString(transaction);
-                    return new ResponseEntity<ReturnBodyTransaction>(objectMapper.readValue(json, ReturnBodyTransaction.class), HttpStatus.CREATED);
+                if (authCheck.isOwnerOfAccountOrEmployee(SecurityContextHolder.getContext().getAuthentication(), fromAccount.get())) {
+                    Transaction transaction = transactionService.createTransaction(body, performedHolderId, authCheck.hasRole("EMPLOYEE"));
+                    if(transaction != null) {
+                        String json = objectMapper.writeValueAsString(transaction);
+                        return new ResponseEntity<ReturnBodyTransaction>(objectMapper.readValue(json, ReturnBodyTransaction.class), HttpStatus.CREATED);
+                    } else {
+                        throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Unable to create transaction with given request");
+                    }
                 } else {
-                    throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Unable to create transaction with given request");
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Insufficient permissions or account does not belong to you");
                 }
             } catch (IOException e) {
                 log.error("Couldn't serialize response for content type application/json", e);
@@ -107,7 +111,8 @@ public class TransactionsApiController implements TransactionsApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                if(body.getToAccount() != null && !accountsService.getAccountByIban(body.getToAccount()).isPresent()) {
+                Optional<Account> toAccount = accountsService.getAccountByIban(body.getToAccount());
+                if(body.getToAccount() != null && !toAccount.isPresent()) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No account with IBAN " + body.getToAccount() + " found.");
                 }
                 if(body.getTransactionType().toString() != BaseTransaction.TransactionTypeEnum.DEPOSIT.toString()) {
@@ -115,12 +120,16 @@ public class TransactionsApiController implements TransactionsApi {
                 }
                 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
                 int performedHolderId = holderService.getHolderByEmail(authentication.getName()).getId();
-                Transaction transaction = transactionService.createDepositTransaction(body, performedHolderId, authCheck.hasRole("EMPLOYEE"));
-                if(transaction != null) {
-                    String json = objectMapper.writeValueAsString(transaction);
-                    return new ResponseEntity<ReturnBodyDeposit>(objectMapper.readValue(json, ReturnBodyDeposit.class), HttpStatus.CREATED);
+                if (authCheck.isOwnerOfAccountOrEmployee(SecurityContextHolder.getContext().getAuthentication(), toAccount.get())) {
+                    Transaction transaction = transactionService.createDepositTransaction(body, performedHolderId, authCheck.hasRole("EMPLOYEE"));
+                    if (transaction != null) {
+                        String json = objectMapper.writeValueAsString(transaction);
+                        return new ResponseEntity<ReturnBodyDeposit>(objectMapper.readValue(json, ReturnBodyDeposit.class), HttpStatus.CREATED);
+                    } else {
+                        throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Unable to create transaction with given request");
+                    }
                 } else {
-                    throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Unable to create transaction with given request");
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Insufficient permissions or account does not belong to you");
                 }
             } catch (IOException e) {
                 log.error("Couldn't serialize response for content type application/json", e);
@@ -134,7 +143,8 @@ public class TransactionsApiController implements TransactionsApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                if(body.getFromAccount() != null && !accountsService.getAccountByIban(body.getFromAccount()).isPresent()) {
+                Optional<Account> fromAccount = accountsService.getAccountByIban(body.getFromAccount());
+                if(body.getFromAccount() != null && !fromAccount.isPresent()) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No account with IBAN " + body.getFromAccount() + " found.");
                 }
                 if(body.getTransactionType().toString() != BaseTransaction.TransactionTypeEnum.WITHDRAWAL.toString()) {
@@ -142,12 +152,16 @@ public class TransactionsApiController implements TransactionsApi {
                 }
                 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
                 int performedHolderId = holderService.getHolderByEmail(authentication.getName()).getId();
-                Transaction transaction = transactionService.createWithdrawalTransaction(body, performedHolderId, authCheck.hasRole("EMPLOYEE"));
-                if(transaction != null) {
-                    String json = objectMapper.writeValueAsString(transaction);
-                    return new ResponseEntity<ReturnBodyWithdrawal>(objectMapper.readValue(json, ReturnBodyWithdrawal.class), HttpStatus.CREATED);
+                if (authCheck.isOwnerOfAccountOrEmployee(SecurityContextHolder.getContext().getAuthentication(), fromAccount.get())) {
+                    Transaction transaction = transactionService.createWithdrawalTransaction(body, performedHolderId, authCheck.hasRole("EMPLOYEE"));
+                    if(transaction != null) {
+                        String json = objectMapper.writeValueAsString(transaction);
+                        return new ResponseEntity<ReturnBodyWithdrawal>(objectMapper.readValue(json, ReturnBodyWithdrawal.class), HttpStatus.CREATED);
+                    } else {
+                        throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Unable to create transaction with given request");
+                    }
                 } else {
-                    throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Unable to create transaction with given request");
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Insufficient permissions or account does not belong to you");
                 }
             } catch (IOException e) {
                 log.error("Couldn't serialize response for content type application/json", e);
@@ -187,7 +201,9 @@ public class TransactionsApiController implements TransactionsApi {
             try {
                 TanDTO tanDTO = transactionService.getTANByTransactionId(id);
                 if (tanDTO != null) {
+                    System.out.println(tanDTO);
                     String json = objectMapper.writeValueAsString(tanDTO);
+                    System.out.println(json);
                     return new ResponseEntity<TanDTO>(objectMapper.readValue(json, TanDTO.class), HttpStatus.OK);
                 }
             } catch (JsonProcessingException e) {
