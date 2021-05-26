@@ -14,4 +14,6 @@ public interface AccountsRepo extends CrudRepository<Account, String> {
     List<Account> findAllWhereStatusOpen();
 
     List<Account> findByHolderId(int id);
+
+    Account findByIban(String iban);
 }
