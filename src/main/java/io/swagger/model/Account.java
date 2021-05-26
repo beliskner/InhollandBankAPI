@@ -5,10 +5,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.model.BaseModels.BaseAccount;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
+
 import org.springframework.validation.annotation.Validated;
 
 import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
 
@@ -18,15 +19,16 @@ import javax.validation.constraints.*;
 @Schema(description = "Full model of an account object")
 @Validated
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
-@Entity
 
+
+@Entity
+@Table(name = "accounts")
 public class Account extends BaseAccount  {
   @JsonProperty("holderId")
   private Integer holderId = null;
 
-  @Id
-  @JsonProperty("iban")
-  private String iban = null;
+
+
 
   @JsonProperty("balance")
   private BigDecimal balance = null;
@@ -50,24 +52,15 @@ public class Account extends BaseAccount  {
     this.holderId = holderId;
   }
 
-  public Account iban(String iban) {
-    this.iban = iban;
-    return this;
-  }
+
 
   /**
    * IBAN of the account
    * @return iban
    **/
   @Schema(example = "NL01INHO0000000002", description = "IBAN of the account")
-  
-    public String getIban() {
-    return iban;
-  }
 
-  public void setIban(String iban) {
-    this.iban = iban;
-  }
+
 
   public Account balance(BigDecimal balance) {
     this.balance = balance;

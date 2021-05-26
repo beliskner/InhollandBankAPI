@@ -44,6 +44,10 @@ public class HolderService {
     public String login(String email, String password) {
         try {
             Holder holder = holderRepository.findByEmail(email);
+            if(holder == null) {
+                throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Email and/or password incorrect");
+            }
+
             String salt = holder.getSalt();
             password = password + salt;
             
@@ -63,11 +67,11 @@ public class HolderService {
 
         Holder holder = new Holder();
         holder.setDailyLimit(new BigDecimal("250"));
-        holder.setEmail("rene@bankman.com");
+        holder.setEmail("john@doe.com");
         holder.setFirstName("rene");
         holder.setLastName("bankman");
         holder.setRole(Role.ROLE_EMPLOYEE);
-        String password = "rootroot";
+        String password = "p4ssw0rd";
         holder.setSalt(salt.toString());
         holder.setStatus(Holder.StatusEnum.ACTIVE);
         String fullPassword = password + salt;

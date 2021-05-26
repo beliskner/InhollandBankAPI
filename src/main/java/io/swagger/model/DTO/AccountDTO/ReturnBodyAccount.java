@@ -46,7 +46,7 @@ public class ReturnBodyAccount extends BaseAccount  {
     this.holderId = holderId;
   }
 
-  public ReturnBodyAccount iban(String iban) {
+  public BaseAccount iban(String iban) {
     this.iban = iban;
     return this;
   }

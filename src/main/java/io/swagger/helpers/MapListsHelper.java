@@ -15,12 +15,12 @@ public class MapListsHelper {
 
     //constructor is nodig om te kunnen autowiren...
 
-    @Autowired
-    public static ModelMapper modelMapper;
-
     public MapListsHelper(ModelMapper modelMapper) {
         this.modelMapper = modelMapper;
     }
+
+    @Autowired
+    public static ModelMapper modelMapper;
 
     public static  <S, T> List<T> mapList(List<S> source, Class<T> targetClass) {
         return source
