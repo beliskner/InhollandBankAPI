@@ -2,6 +2,7 @@ package io.swagger.api.HoldersController;
 
 import io.swagger.annotations.Api;
 import io.swagger.helpers.MapListsHelper;
+import io.swagger.model.Account;
 import io.swagger.model.DTO.AccountDTO.ArrayOfAccounts;
 import io.swagger.model.DTO.HolderDTO.ArrayOfHolders;
 import io.swagger.model.DTO.HolderDTO.BodyDailyLimit;
@@ -32,7 +33,10 @@ import javax.validation.constraints.*;
 import javax.validation.Valid;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.List;
+
+import static io.swagger.helpers.MapListsHelper.modelMapper;
 
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
 @RestController
@@ -88,12 +92,8 @@ public class HoldersApiController implements HoldersApi {
 )) @Valid @RequestParam(value = "includeClosed", required = false) String includeClosed) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<ArrayOfAccounts>(objectMapper.readValue("[ \"\", \"\" ]", ArrayOfAccounts.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<ArrayOfAccounts>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+            ArrayOfAccounts accounts = modelMapper.map(holderService.getAccountsByHolderId(id), ArrayOfAccounts.class);
+            return new ResponseEntity(accounts, HttpStatus.OK);
         }
 
         return new ResponseEntity<ArrayOfAccounts>(HttpStatus.NOT_IMPLEMENTED);
@@ -126,14 +126,9 @@ public class HoldersApiController implements HoldersApi {
 )) @PathVariable("id") Integer id) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<ReturnBodyHolder>(objectMapper.readValue("\"\"", ReturnBodyHolder.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<ReturnBodyHolder>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+            ReturnBodyHolder returnBodyHolder = modelMapper.map(holderService.getHolderById(id), ReturnBodyHolder.class);
+            return new ResponseEntity<ReturnBodyHolder>(returnBodyHolder, HttpStatus.OK);
         }
-
         return new ResponseEntity<ReturnBodyHolder>(HttpStatus.NOT_IMPLEMENTED);
     }
 

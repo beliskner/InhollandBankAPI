@@ -111,7 +111,16 @@ public class HolderService {
 
         Holder holder = holderRepository.findById(id);
 
+        if(holder == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Holder with id " + id + " not found");
+        }
+
         return holder;
+    }
+
+    public List<Account> getAccountsByHolderId(int id) {
+        List<Account> accounts = accountsService.getAllAccountsByHolderId(id);
+        return accounts;
     }
 
     public Holder add(Holder holder) {
