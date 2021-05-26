@@ -49,4 +49,3 @@ public interface AuthApi {
     ResponseEntity<Void> logoutHolder();
 
 }
-
