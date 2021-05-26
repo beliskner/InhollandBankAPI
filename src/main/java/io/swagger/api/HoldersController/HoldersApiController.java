@@ -34,6 +34,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.List;
 
+import static io.swagger.helpers.MapListsHelper.modelMapper;
+
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
 @RestController
 @Api(tags = {"Holders"})
@@ -126,14 +128,10 @@ public class HoldersApiController implements HoldersApi {
 )) @PathVariable("id") Integer id) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<ReturnBodyHolder>(objectMapper.readValue("\"\"", ReturnBodyHolder.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<ReturnBodyHolder>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+            Holder holder = holderService.getHolderById(id);
+            ReturnBodyHolder returnBodyHolder = modelMapper.map(holderService.getHolderById(id), ReturnBodyHolder.class);
+            return new ResponseEntity<ReturnBodyHolder>(returnBodyHolder, HttpStatus.OK);
         }
-
         return new ResponseEntity<ReturnBodyHolder>(HttpStatus.NOT_IMPLEMENTED);
     }
 
