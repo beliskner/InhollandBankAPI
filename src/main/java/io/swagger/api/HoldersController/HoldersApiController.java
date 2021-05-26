@@ -122,7 +122,6 @@ public class HoldersApiController implements HoldersApi {
 )) @Valid @RequestParam(value = "role", required = false) String role,@Parameter(in = ParameterIn.QUERY, description = "Filter by first name" ,schema=@Schema()) @Valid @RequestParam(value = "firstName", required = false) String firstName,@Parameter(in = ParameterIn.QUERY, description = "Filter by last name" ,schema=@Schema()) @Valid @RequestParam(value = "lastName", required = false) String lastName,@Parameter(in = ParameterIn.QUERY, description = "Include frozen holders to the results of all holders or not" ,schema=@Schema(allowableValues={ "No", "Yes" }
 )) @Valid @RequestParam(value = "includeFrozen", required = false) String includeFrozen) {
         String accept = request.getHeader("Accept");
-        // TODO: accept contains is now always */*, fix later
         if (accept != null && accept.contains("application/json")) {
             try {
                 List<Holder> holders = holderService.getAllHolders();
