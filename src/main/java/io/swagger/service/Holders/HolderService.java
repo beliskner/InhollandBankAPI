@@ -118,6 +118,11 @@ public class HolderService {
         return holder;
     }
 
+    public List<Account> getAccountsByHolderId(int id) {
+        List<Account> accounts = accountsService.getAllAccountsByHolderId(id);
+        return accounts;
+    }
+
     public Holder add(Holder holder) {
 
         Random r = new SecureRandom();
