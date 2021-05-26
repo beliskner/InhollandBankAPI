@@ -45,7 +45,7 @@ public class Account extends BaseAccount  {
    **/
   @Schema(example = "1", description = "The ID of the holder the account will be bound to")
   
-    public Integer getHolderId() {
+  public Integer getHolderId() {
     return holderId;
   }
 

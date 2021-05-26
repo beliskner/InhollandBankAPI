@@ -12,6 +12,7 @@ import io.swagger.model.DTO.AccountDTO.RequestBodyAccount;
 import io.swagger.model.DTO.AccountDTO.RequestBodyUpdateAccount;
 import io.swagger.model.DTO.AccountDTO.ReturnBodyAccount;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.security.AuthCheck;
 import io.swagger.service.accounts.AccountsService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -22,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -37,6 +39,8 @@ import static io.swagger.helpers.MapListsHelper.modelMapper;
 @Api(tags = {"Accounts"})
 public class AccountsApiController implements AccountsApi {
 
+    @Autowired
+    private AuthCheck authCheck;
 
     @Autowired
     AccountsService accountsService;
@@ -123,7 +127,7 @@ public class AccountsApiController implements AccountsApi {
 
     public ResponseEntity<BigDecimal> getBalanceByIban(@Parameter(in = ParameterIn.PATH, description = "Gets an account by IBAN. An account is a balance of currency owned by a holder. Each account is identified by a string identifier `iban`. ", required=true, schema=@Schema()) @PathVariable("iban") String iban) {
         String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
+        if (accept != null && accept.contains("application/json") && authCheck.isOwnerOfAccountOrEmployee(SecurityContextHolder.getContext().getAuthentication(), iban)) {
             try {
                 return new ResponseEntity<BigDecimal>(objectMapper.readValue("500.25", BigDecimal.class), HttpStatus.NOT_IMPLEMENTED);
             } catch (IOException e) {
