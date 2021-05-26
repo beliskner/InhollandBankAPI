@@ -1,6 +1,8 @@
 package io.swagger.api.HoldersController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.Api;
+import io.swagger.api.NotFoundException;
 import io.swagger.helpers.MapListsHelper;
 import io.swagger.model.Account;
 import io.swagger.model.DTO.AccountDTO.ArrayOfAccounts;
@@ -28,11 +30,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.server.ResponseStatusException;
 
+import javax.security.auth.login.AccountException;
 import javax.validation.constraints.*;
 import javax.validation.Valid;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.io.InvalidObjectException;
 import java.lang.reflect.Array;
 import java.util.List;
 
@@ -92,8 +97,21 @@ public class HoldersApiController implements HoldersApi {
 )) @Valid @RequestParam(value = "includeClosed", required = false) String includeClosed) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
-            ArrayOfAccounts accounts = modelMapper.map(holderService.getAccountsByHolderId(id), ArrayOfAccounts.class);
-            return new ResponseEntity(accounts, HttpStatus.OK);
+            try {
+                List<Account> accounts = holderService.getAccountsByHolderId(id);
+                if (!accounts.isEmpty()) {
+                    String json = objectMapper.writeValueAsString(accounts);
+                    return new ResponseEntity<ArrayOfAccounts>(objectMapper.readValue(json, ArrayOfAccounts.class), HttpStatus.OK);
+                } else {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No holders are found");
+                }
+            } catch (JsonProcessingException e) {
+                log.error("Couldn't process Json", e);
+                return new ResponseEntity<ArrayOfAccounts>(HttpStatus.INTERNAL_SERVER_ERROR);
+            } catch (IOException e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<ArrayOfAccounts>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
 
         return new ResponseEntity<ArrayOfAccounts>(HttpStatus.NOT_IMPLEMENTED);
@@ -105,15 +123,19 @@ public class HoldersApiController implements HoldersApi {
 )) @Valid @RequestParam(value = "includeFrozen", required = false) String includeFrozen) {
         String accept = request.getHeader("Accept");
         // TODO: accept contains is now always */*, fix later
-        if (accept != null  ) { // && accept.contains("application/json")
+        if (accept != null && accept.contains("application/json")) {
             try {
-                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-                String name = authentication.getName();
-                System.out.println(name);
                 List<Holder> holders = holderService.getAllHolders();
-                List<ReturnBodyHolder> returnBodyHolders = MapListsHelper.mapList(holders, ReturnBodyHolder.class);
-                return new ResponseEntity(returnBodyHolders, HttpStatus.OK);
-            } catch (Exception e) {
+                if (!holders.isEmpty()) {
+                    String json = objectMapper.writeValueAsString(holders);
+                    return new ResponseEntity<ArrayOfHolders>(objectMapper.readValue(json, ArrayOfHolders.class), HttpStatus.OK);
+                } else {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No holders are found");
+                }
+            } catch(JsonProcessingException e) {
+                log.error("Couldn't process Json", e);
+                return new ResponseEntity<ArrayOfHolders>(HttpStatus.INTERNAL_SERVER_ERROR);
+            } catch (IOException e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<ArrayOfHolders>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
@@ -126,9 +148,23 @@ public class HoldersApiController implements HoldersApi {
 )) @PathVariable("id") Integer id) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
-            ReturnBodyHolder returnBodyHolder = modelMapper.map(holderService.getHolderById(id), ReturnBodyHolder.class);
-            return new ResponseEntity<ReturnBodyHolder>(returnBodyHolder, HttpStatus.OK);
+            try {
+                Holder holder = holderService.getHolderById(id);
+                if (holder != null) {
+                    String json = objectMapper.writeValueAsString(holder);
+                    return new ResponseEntity<ReturnBodyHolder>(objectMapper.readValue(json, ReturnBodyHolder.class), HttpStatus.OK);
+                } else {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Holder with id " + id + " not found");
+                }
+            } catch(JsonProcessingException e) {
+                log.error("Couldn't process Json", e);
+                return new ResponseEntity<ReturnBodyHolder>(HttpStatus.INTERNAL_SERVER_ERROR);
+            } catch (IOException e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<ReturnBodyHolder>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
+
         return new ResponseEntity<ReturnBodyHolder>(HttpStatus.NOT_IMPLEMENTED);
     }
 
