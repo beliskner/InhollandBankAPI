@@ -7,7 +7,10 @@ import io.swagger.model.Enums.Role;
 import io.swagger.model.Holder;
 import io.swagger.repository.AccountsRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.security.SecureRandom;
@@ -88,25 +91,23 @@ public class AccountsService {
         newMin.setMinBalance(account.getMinBalance());
         accountsRepo.save(account);
         return newMin;
-
     }
 
     public List<Account> getAllAccounts(String includeClosed) {
-        Iterator iterator =  null;
+        List<Account> accounts = Collections.emptyList();
 
         if (includeClosed == null ||  includeClosed.equals("Yes")){
-            iterator = accountsRepo.findAll().iterator();
+            accounts = (List<Account>) accountsRepo.findAll();
 
         }else {
-            iterator =  accountsRepo.findAllWhereStatusOpen().iterator();
-                    //accountsRepo.findAllWhereStatusOpen();
+            accounts = accountsRepo.findAllWhereStatusOpen();
         }
 
-        Stream<Account> x = StreamSupport
-                .stream(Spliterators
-                        .spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
+        if (accounts == null || accounts.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No accounts found");
+        }
 
-       return  x.collect(Collectors.toList());
+        return accounts;
     }
 
     public List<Account> getAllAccountsByHolderId(Integer id) {
@@ -123,6 +124,17 @@ public class AccountsService {
         account.setStatus(StatusEnum.OPEN);
         account.setBalance(new BigDecimal("1000000.25"));
         account.setHolderId(1);
+        accountsRepo.save(account);
+    }
+
+    public void addAccountForCustomer() {
+        Account account = new Account();
+        account.setAccountType(AccountTypeEnum.CURRENT);
+        account.setMaxTransfer(new BigDecimal("5000.00"));
+        account.setMinBalance(new BigDecimal("-500.00"));
+        account.setStatus(StatusEnum.OPEN);
+        account.setBalance(new BigDecimal("5000.25"));
+        account.setHolderId(2);
         accountsRepo.save(account);
     }
 }
