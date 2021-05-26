@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import static io.swagger.helpers.MapListsHelper.modelMapper;
+
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
 @RestController
 @Api(tags = {"Accounts"})
@@ -112,13 +114,8 @@ public class AccountsApiController implements AccountsApi {
 )) @Valid @RequestParam(value = "includeClosed", required = false) String includeClosed) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
-            try {
-                List<Account> accounts =  accountsService.getAllAccounts(includeClosed);
-                List<ReturnBodyAccount> returnBodyAccounts =  MapListsHelper.mapList(accounts, ReturnBodyAccount.class);
-                return new ResponseEntity(returnBodyAccounts, HttpStatus.OK);
-            } catch (Exception e) {
-                return new ResponseEntity<ArrayOfAccounts>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+            ArrayOfAccounts accounts = modelMapper.map(accountsService.getAllAccounts(includeClosed), ArrayOfAccounts.class);
+            return new ResponseEntity(accounts, HttpStatus.OK);
         }
 
         return new ResponseEntity<ArrayOfAccounts>(HttpStatus.NOT_IMPLEMENTED);
