@@ -12,6 +12,7 @@ import io.swagger.model.DTO.HolderDTO.RequestBodyUpdateHolder;
 import io.swagger.model.DTO.HolderDTO.ReturnBodyHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.model.Holder;
+import io.swagger.security.AuthCheck;
 import io.swagger.service.Holders.HolderService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -48,6 +49,9 @@ public class HoldersApiController implements HoldersApi {
     private final ObjectMapper objectMapper;
 
     private final HttpServletRequest request;
+
+    @Autowired
+    private AuthCheck authCheck;
 
     @Autowired
     private HolderService holderService;
@@ -107,9 +111,6 @@ public class HoldersApiController implements HoldersApi {
         // TODO: accept contains is now always */*, fix later
         if (accept != null  ) { // && accept.contains("application/json")
             try {
-                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-                String name = authentication.getName();
-                System.out.println(name);
                 List<Holder> holders = holderService.getAllHolders();
                 List<ReturnBodyHolder> returnBodyHolders = MapListsHelper.mapList(holders, ReturnBodyHolder.class);
                 return new ResponseEntity(returnBodyHolders, HttpStatus.OK);

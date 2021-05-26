@@ -8,7 +8,7 @@ package io.swagger.api.TransactionsController;
 import io.swagger.model.DTO.TransactionDTO.ArrayOfTransactions;
 import io.swagger.model.Body;
 import io.swagger.model.ResponseCodes.Error;
-import io.swagger.model.ResponseCodes.InlineResponse200;
+import io.swagger.model.DTO.TransactionDTO.TanDTO;
 import io.swagger.model.ResponseCodes.InlineResponse2001;
 import org.threeten.bp.LocalDate;
 import io.swagger.model.DTO.TransactionDTO.RequestBodyDeposit;
@@ -102,7 +102,7 @@ public interface TransactionsApi {
     @Operation(summary = "Gets TAN by transaction ID", description = "", security = {
         @SecurityRequirement(name = "bearerAuth")    }, tags={ "Transactions" })
     @ApiResponses(value = { 
-        @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = InlineResponse200.class))),
+        @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = TanDTO.class))),
         
         @ApiResponse(responseCode = "401", description = "Authorization information is missing or invalid.", content = @Content(schema = @Schema(implementation = Error.class))),
         
@@ -112,7 +112,7 @@ public interface TransactionsApi {
     @RequestMapping(value = "/transactions/{id}/tan",
         produces = { "application/json" }, 
         method = RequestMethod.GET)
-    ResponseEntity<InlineResponse200> getTanByTransactionId(@Min(1)@Parameter(in = ParameterIn.PATH, description = "Gets a transaction by ID. A transaction is a balance change between two accounts, one account that subtracts currency which is added to the opposing account. Each transaction is identified by a numeric `id`. ", required=true, schema=@Schema(allowableValues={  }, minimum="1"
+    ResponseEntity<TanDTO> getTanByTransactionId(@Min(1)@Parameter(in = ParameterIn.PATH, description = "Gets a transaction by ID. A transaction is a balance change between two accounts, one account that subtracts currency which is added to the opposing account. Each transaction is identified by a numeric `id`. ", required=true, schema=@Schema(allowableValues={  }, minimum="1"
 )) @PathVariable("id") Integer id);
 
 

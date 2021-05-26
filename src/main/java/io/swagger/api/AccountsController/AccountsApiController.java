@@ -25,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import javax.servlet.http.HttpServletRequest;
@@ -101,8 +102,12 @@ public class AccountsApiController implements AccountsApi {
                 Optional<Account> optionalAccount  = accountsService.getAccountByIban(iban);
 
                 if (optionalAccount.isPresent()){
-                    ReturnBodyAccount returnBodyAccount =  mapper.map(optionalAccount.get(), ReturnBodyAccount.class);
-                    return new ResponseEntity<ReturnBodyAccount>(returnBodyAccount, HttpStatus.OK);
+                    if (authCheck.isOwnerOfAccountOrEmployee(SecurityContextHolder.getContext().getAuthentication(), optionalAccount.get())) {
+                        ReturnBodyAccount returnBodyAccount =  mapper.map(optionalAccount.get(), ReturnBodyAccount.class);
+                        return new ResponseEntity<ReturnBodyAccount>(returnBodyAccount, HttpStatus.OK);
+                    } else {
+                        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Permission insufficient or specified account does not belong to you");
+                    }
                 }
                 else return new ResponseEntity(HttpStatus.NOT_FOUND);
 
@@ -127,7 +132,7 @@ public class AccountsApiController implements AccountsApi {
 
     public ResponseEntity<BigDecimal> getBalanceByIban(@Parameter(in = ParameterIn.PATH, description = "Gets an account by IBAN. An account is a balance of currency owned by a holder. Each account is identified by a string identifier `iban`. ", required=true, schema=@Schema()) @PathVariable("iban") String iban) {
         String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json") && authCheck.isOwnerOfAccountOrEmployee(SecurityContextHolder.getContext().getAuthentication(), iban)) {
+        if (accept != null && accept.contains("application/json")) {
             try {
                 return new ResponseEntity<BigDecimal>(objectMapper.readValue("500.25", BigDecimal.class), HttpStatus.NOT_IMPLEMENTED);
             } catch (IOException e) {
