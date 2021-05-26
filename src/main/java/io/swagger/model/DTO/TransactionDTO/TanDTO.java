@@ -1,4 +1,4 @@
-package io.swagger.model.ResponseCodes;
+package io.swagger.model.DTO.TransactionDTO;
 
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,39 +6,17 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.validation.annotation.Validated;
 
 /**
- * InlineResponse200
+ * TanDTO
  */
 @Validated
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
 
 
-public class InlineResponse200   {
-  @JsonProperty("id")
-  private Integer id = null;
-
+public class TanDTO {
   @JsonProperty("TAN")
   private Integer TAN = null;
 
-  public InlineResponse200 id(Integer id) {
-    this.id = id;
-    return this;
-  }
-
-  /**
-   * Get id
-   * @return id
-   **/
-  @Schema(example = "1", description = "")
-  
-    public Integer getId() {
-    return id;
-  }
-
-  public void setId(Integer id) {
-    this.id = id;
-  }
-
-  public InlineResponse200 TAN(Integer TAN) {
+  public TanDTO TAN(Integer TAN) {
     this.TAN = TAN;
     return this;
   }
@@ -66,22 +44,19 @@ public class InlineResponse200   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    InlineResponse200 inlineResponse200 = (InlineResponse200) o;
-    return Objects.equals(this.id, inlineResponse200.id) &&
-        Objects.equals(this.TAN, inlineResponse200.TAN);
+    TanDTO tanDTO = (TanDTO) o;
+    return Objects.equals(this.TAN, tanDTO.TAN);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, TAN);
+    return Objects.hash(TAN);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class InlineResponse200 {\n");
-    
-    sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    TAN: ").append(toIndentedString(TAN)).append("\n");
     sb.append("}");
     return sb.toString();
