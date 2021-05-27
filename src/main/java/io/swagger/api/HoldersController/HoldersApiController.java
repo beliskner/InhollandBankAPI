@@ -14,6 +14,7 @@ import io.swagger.model.DTO.HolderDTO.RequestBodyUpdateHolder;
 import io.swagger.model.DTO.HolderDTO.ReturnBodyHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.model.Holder;
+import io.swagger.security.AuthCheck;
 import io.swagger.service.Holders.HolderService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -56,6 +57,9 @@ public class HoldersApiController implements HoldersApi {
 
     @Autowired
     private HolderService holderService;
+
+    @Autowired
+    public AuthCheck authCheck;
 
     @org.springframework.beans.factory.annotation.Autowired
     public HoldersApiController(ObjectMapper objectMapper, HttpServletRequest request) {
@@ -172,7 +176,15 @@ public class HoldersApiController implements HoldersApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                return new ResponseEntity<BodyDailyLimit>(objectMapper.readValue("{\n  \"dailyLimit\" : 500\n}", BodyDailyLimit.class), HttpStatus.NOT_IMPLEMENTED);
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                boolean isHolderMakingRequestOrEmployee = authCheck.isHolderMakingRequestOrEmployee(authentication, id);
+                if (isHolderMakingRequestOrEmployee) {
+                    Holder holder = holderService.updateDailyLimitByHolderId(id, body.getDailyLimit());
+                    String json = objectMapper.writeValueAsString(holder);
+                    return new ResponseEntity<BodyDailyLimit>(objectMapper.readValue(json, BodyDailyLimit.class), HttpStatus.OK);
+                } else {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+                }
             } catch (IOException e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<BodyDailyLimit>(HttpStatus.INTERNAL_SERVER_ERROR);

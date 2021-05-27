@@ -1,6 +1,7 @@
 package io.swagger.service.Holders;
 
 import io.swagger.model.Account;
+import io.swagger.model.DTO.HolderDTO.BodyDailyLimit;
 import io.swagger.model.Enums.Role;
 import io.swagger.model.Holder;
 import io.swagger.repository.HolderRepository;
@@ -155,5 +156,11 @@ public class HolderService {
 //        } else {
 //            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Email already in use");
 //        }
+    }
+
+    public Holder updateDailyLimitByHolderId(int id, BigDecimal dailyLimit) {
+        Holder holder = getHolderById(id);
+        holder.setDailyLimit(dailyLimit);
+        return holderRepository.save(holder);
     }
 }
