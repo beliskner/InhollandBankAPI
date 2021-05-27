@@ -3,7 +3,7 @@ package io.swagger.model.DTO.TransactionDTO.Wrappers;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.model.Transaction;
 
-public class ReturnBodyTransactionWrapper {
+public class TransactionWrapper {
     @JsonProperty("Transaction")
     Transaction transaction;
 
