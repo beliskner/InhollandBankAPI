@@ -1,7 +1,7 @@
 package io.swagger.api.AuthController;
 
 import io.swagger.annotations.Api;
-import io.swagger.model.ResponseCodes.InlineResponse201;
+import io.swagger.model.DTO.AuthDTO.TokenResponse;
 import io.swagger.model.DTO.AuthDTO.Login;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.service.Holders.HolderService;
@@ -39,19 +39,14 @@ public class AuthApiController implements AuthApi {
         this.request = request;
     }
 
-    public ResponseEntity<InlineResponse201> loginHolder(@Parameter(in = ParameterIn.DEFAULT, description = "Request body to login a holder", required=true, schema=@Schema()) @Valid @RequestBody Login body) {
+    public ResponseEntity<TokenResponse> loginHolder(@Parameter(in = ParameterIn.DEFAULT, description = "Request body to login a holder", required=true, schema=@Schema()) @Valid @RequestBody Login body) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             String token = holderService.login(body.getEmail(), body.getPassword());
-            InlineResponse201 tokenResponse = new InlineResponse201();
+            TokenResponse tokenResponse = new TokenResponse();
             tokenResponse.setToken(token);
             return new ResponseEntity(tokenResponse, HttpStatus.CREATED);
         }
-        return new ResponseEntity<InlineResponse201>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<Void> logoutHolder() {
-        String accept = request.getHeader("Accept");
-        return new ResponseEntity<Void>(HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<TokenResponse>(HttpStatus.NOT_IMPLEMENTED);
     }
 }

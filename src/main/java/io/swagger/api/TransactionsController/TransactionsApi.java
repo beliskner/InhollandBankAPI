@@ -5,18 +5,10 @@
  */
 package io.swagger.api.TransactionsController;
 
-import io.swagger.model.DTO.TransactionDTO.ArrayOfTransactions;
+import io.swagger.model.DTO.TransactionDTO.*;
 import io.swagger.model.Body;
 import io.swagger.model.ResponseCodes.Error;
-import io.swagger.model.DTO.TransactionDTO.TanDTO;
-import io.swagger.model.ResponseCodes.InlineResponse2001;
 import org.threeten.bp.LocalDate;
-import io.swagger.model.DTO.TransactionDTO.RequestBodyDeposit;
-import io.swagger.model.DTO.TransactionDTO.RequestBodyTransaction;
-import io.swagger.model.DTO.TransactionDTO.RequestBodyWithdrawal;
-import io.swagger.model.DTO.TransactionDTO.ReturnBodyDeposit;
-import io.swagger.model.DTO.TransactionDTO.ReturnBodyTransaction;
-import io.swagger.model.DTO.TransactionDTO.ReturnBodyWithdrawal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -138,15 +130,15 @@ public interface TransactionsApi {
     @Operation(summary = "Verify TAN to Approve transaction", description = "", security = {
         @SecurityRequirement(name = "bearerAuth")    }, tags={ "Transactions" })
     @ApiResponses(value = { 
-        @ApiResponse(responseCode = "200", description = "TAN correct", content = @Content(schema = @Schema(implementation = InlineResponse2001.class))),
+        @ApiResponse(responseCode = "200", description = "TAN correct", content = @Content(schema = @Schema(implementation = String.class))),
         
         @ApiResponse(responseCode = "401", description = "Authorization information is missing or invalid.", content = @Content(schema = @Schema(implementation = Error.class))) })
     @RequestMapping(value = "/transactions/{id}/tan",
         produces = { "application/json" }, 
         consumes = { "application/json" }, 
         method = RequestMethod.POST)
-    ResponseEntity<InlineResponse2001> verifyTransactionByTan(@Min(1)@Parameter(in = ParameterIn.PATH, description = "", required=true, schema=@Schema(allowableValues={  }, minimum="1"
-)) @PathVariable("id") Integer id, @Parameter(in = ParameterIn.DEFAULT, description = "Request body to create a new transaction", required=true, schema=@Schema()) @Valid @RequestBody Body body);
+    ResponseEntity<TanVerificationDTO> verifyTransactionByTan(@Min(1)@Parameter(in = ParameterIn.PATH, description = "", required=true, schema=@Schema(allowableValues={  }, minimum="1"
+)) @PathVariable("id") Integer id, @Parameter(in = ParameterIn.DEFAULT, description = "Request body to create a new transaction", required=true, schema=@Schema()) @Valid @RequestBody TanDTO body);
 
 }
 

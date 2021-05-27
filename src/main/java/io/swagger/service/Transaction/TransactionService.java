@@ -159,4 +159,28 @@ public class TransactionService {
             return true;
         }
     }
+
+    public TanVerificationDTO verifyTransactionByTan(Integer id, Integer tan) {
+        TanVerificationDTO tanVerification = new TanVerificationDTO();
+        Optional<Transaction> optionalTransaction = getTransactionById(id);
+        if(optionalTransaction.isPresent()) {
+            Transaction transaction = optionalTransaction.get();
+            if (transaction.getTAN().equals(tan)) {
+                tanVerification.setSuccess(true);
+                tanVerification.setMessage("TAN Correct. Transaction approved.");
+
+                updateBalancesByTransaction(transaction);
+
+                transaction.setStatus(Transaction.StatusEnum.APPROVED);
+                transactionRepository.save(transaction);
+            } else {
+                tanVerification.setSuccess(false);
+                tanVerification.setMessage("TAN incorrect.");
+            }
+        } else {
+            tanVerification.setMessage("Transaction with ID " + id + " not found.");
+            tanVerification.setSuccess(false);
+        }
+        return tanVerification;
+    }
 }
