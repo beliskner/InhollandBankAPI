@@ -7,6 +7,7 @@ import io.swagger.service.Holders.HolderService;
 import io.swagger.service.accounts.AccountsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -20,17 +21,9 @@ public class AuthCheck {
     @Autowired
     private AccountsService accountsService;
 
-    public Boolean isOwnerOfAccountOrEmployee(Authentication authentication, String iban) {
+    public Boolean isOwnerOfAccountOrEmployee(Authentication authentication, Account account) {
         String email = authentication.getName();
-        Optional<Account> optionalAccount = accountsService.getAccountByIban(iban);
-        Account account;
-        if(optionalAccount.isPresent()) {
-            account = optionalAccount.get();
-        } else {
-            return false;
-        }
         Holder holder = holderService.getHolderByEmail(email);
-
 
         if(holder.getId() == account.getHolderId() || holder.getRole() == Role.ROLE_EMPLOYEE) {
             return true;
@@ -39,13 +32,18 @@ public class AuthCheck {
         }
     }
 
-    public Boolean isHolderMakingRequestOrEmployee(Authentication authentication, int id) {
+    public Boolean isHolderMakingRequestOrEmployee(Authentication authentication, Holder holder) {
         String email = authentication.getName();
-        Holder holder = holderService.getHolderByEmail(email);
-        if(holder.getId() == id || holder.getRole() == Role.ROLE_EMPLOYEE) {
+        Holder authenticatedHolder = holderService.getHolderByEmail(email);
+        if(authenticatedHolder.getId() == holder.getId() || authenticatedHolder.getRole() == Role.ROLE_EMPLOYEE) {
             return true;
         } else {
             return false;
         }
+    }
+
+    public static Boolean hasRole (String roleName) {
+        return SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + roleName));
     }
 }

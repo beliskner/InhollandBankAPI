@@ -1,11 +1,22 @@
 package io.swagger.api.TransactionsController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.Api;
+import io.swagger.model.BaseModels.BaseTransaction;
 import io.swagger.model.DTO.TransactionDTO.ArrayOfTransactions;
 import io.swagger.model.Body;
-import io.swagger.model.ResponseCodes.InlineResponse200;
+import io.swagger.model.DTO.TransactionDTO.TanDTO;
 import io.swagger.model.ResponseCodes.InlineResponse2001;
+import io.swagger.model.Transaction;
+import io.swagger.security.AuthCheck;
+import io.swagger.service.Holders.HolderService;
+import io.swagger.service.Transaction.TransactionService;
+import io.swagger.service.accounts.AccountsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.server.ResponseStatusException;
 import org.threeten.bp.LocalDate;
 import io.swagger.model.DTO.TransactionDTO.RequestBodyDeposit;
 import io.swagger.model.DTO.TransactionDTO.RequestBodyTransaction;
@@ -30,11 +41,25 @@ import javax.validation.constraints.*;
 import javax.validation.Valid;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
 @RestController
 @Api(tags = {"Transactions"})
 public class TransactionsApiController implements TransactionsApi {
+
+    @Autowired
+    private TransactionService transactionService;
+
+    @Autowired
+    private HolderService holderService;
+
+    @Autowired
+    private AccountsService accountsService;
+
+    @Autowired
+    private AuthCheck authCheck;
 
     private static final Logger log = LoggerFactory.getLogger(TransactionsApiController.class);
 
@@ -52,42 +77,84 @@ public class TransactionsApiController implements TransactionsApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                return new ResponseEntity<ReturnBodyTransaction>(objectMapper.readValue("\"\"", ReturnBodyTransaction.class), HttpStatus.NOT_IMPLEMENTED);
+                if(body.getToAccount() != null && !accountsService.getAccountByIban(body.getToAccount()).isPresent()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No account with IBAN " + body.getToAccount() + " found.");
+                }
+                if (body.getFromAccount() != null && !accountsService.getAccountByIban(body.getFromAccount()).isPresent()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No account with IBAN " + body.getFromAccount() + " found.");
+                }
+                if(body.getTransactionType().toString() != BaseTransaction.TransactionTypeEnum.TRANSFER.toString() && body.getTransactionType().toString() != BaseTransaction.TransactionTypeEnum.REFUND.toString()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Specified transaction type: '"+ body.getTransactionType().toString() + "' incorrect, must be Transfer or Refund");
+                }
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                int performedHolderId = holderService.getHolderByEmail(authentication.getName()).getId();
+                Transaction transaction = transactionService.createTransaction(body, performedHolderId, authCheck.hasRole("EMPLOYEE"));
+                if(transaction != null) {
+                    String json = objectMapper.writeValueAsString(transaction);
+                    return new ResponseEntity<ReturnBodyTransaction>(objectMapper.readValue(json, ReturnBodyTransaction.class), HttpStatus.CREATED);
+                } else {
+                    throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Unable to create transaction with given request");
+                }
             } catch (IOException e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<ReturnBodyTransaction>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-
-        return new ResponseEntity<ReturnBodyTransaction>(HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<ReturnBodyTransaction>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public ResponseEntity<ReturnBodyDeposit> createTransactionForDeposit(@Parameter(in = ParameterIn.DEFAULT, description = "Request body to create a new deposit transaction", required=true, schema=@Schema()) @Valid @RequestBody RequestBodyDeposit body) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                return new ResponseEntity<ReturnBodyDeposit>(objectMapper.readValue("\"\"", ReturnBodyDeposit.class), HttpStatus.NOT_IMPLEMENTED);
+                if(body.getToAccount() != null && !accountsService.getAccountByIban(body.getToAccount()).isPresent()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No account with IBAN " + body.getToAccount() + " found.");
+                }
+                if(body.getTransactionType().toString() != BaseTransaction.TransactionTypeEnum.DEPOSIT.toString()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Specified transaction type: '"+ body.getTransactionType().toString() + "' incorrect. must be Deposit");
+                }
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                int performedHolderId = holderService.getHolderByEmail(authentication.getName()).getId();
+                Transaction transaction = transactionService.createDepositTransaction(body, performedHolderId, authCheck.hasRole("EMPLOYEE"));
+                if(transaction != null) {
+                    String json = objectMapper.writeValueAsString(transaction);
+                    return new ResponseEntity<ReturnBodyDeposit>(objectMapper.readValue(json, ReturnBodyDeposit.class), HttpStatus.CREATED);
+                } else {
+                    throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Unable to create transaction with given request");
+                }
             } catch (IOException e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<ReturnBodyDeposit>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-
-        return new ResponseEntity<ReturnBodyDeposit>(HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<ReturnBodyDeposit>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public ResponseEntity<ReturnBodyWithdrawal> createTransactionForWithdrawal(@Parameter(in = ParameterIn.DEFAULT, description = "Request body to create a new withdrawal transaction", required=true, schema=@Schema()) @Valid @RequestBody RequestBodyWithdrawal body) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                return new ResponseEntity<ReturnBodyWithdrawal>(objectMapper.readValue("\"\"", ReturnBodyWithdrawal.class), HttpStatus.NOT_IMPLEMENTED);
+                if(body.getFromAccount() != null && !accountsService.getAccountByIban(body.getFromAccount()).isPresent()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No account with IBAN " + body.getFromAccount() + " found.");
+                }
+                if(body.getTransactionType().toString() != BaseTransaction.TransactionTypeEnum.WITHDRAWAL.toString()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Specified transaction type: '"+ body.getTransactionType().toString() + "' incorrect, must be Withdrawal");
+                }
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                int performedHolderId = holderService.getHolderByEmail(authentication.getName()).getId();
+                Transaction transaction = transactionService.createWithdrawalTransaction(body, performedHolderId, authCheck.hasRole("EMPLOYEE"));
+                if(transaction != null) {
+                    String json = objectMapper.writeValueAsString(transaction);
+                    return new ResponseEntity<ReturnBodyWithdrawal>(objectMapper.readValue(json, ReturnBodyWithdrawal.class), HttpStatus.CREATED);
+                } else {
+                    throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Unable to create transaction with given request");
+                }
             } catch (IOException e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<ReturnBodyWithdrawal>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-
-        return new ResponseEntity<ReturnBodyWithdrawal>(HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<ReturnBodyWithdrawal>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @PreAuthorize("hasRole('EMPLOYEE')")
@@ -95,29 +162,44 @@ public class TransactionsApiController implements TransactionsApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                return new ResponseEntity<ArrayOfTransactions>(objectMapper.readValue("[ \"\", \"\" ]", ArrayOfTransactions.class), HttpStatus.NOT_IMPLEMENTED);
+                List<Transaction> transactionsList = transactionService.getAllTransactions();
+                if (!transactionsList.isEmpty()) {
+                    String json = objectMapper.writeValueAsString(transactionsList);
+                    return new ResponseEntity<ArrayOfTransactions>(objectMapper.readValue(json, ArrayOfTransactions.class), HttpStatus.OK);
+                } else {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No transactions found");
+                }
+            } catch (JsonProcessingException e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<ArrayOfTransactions>(HttpStatus.INTERNAL_SERVER_ERROR);
             } catch (IOException e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<ArrayOfTransactions>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-
-        return new ResponseEntity<ArrayOfTransactions>(HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<ArrayOfTransactions>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public ResponseEntity<InlineResponse200> getTanByTransactionId(@Min(1)@Parameter(in = ParameterIn.PATH, description = "Gets a transaction by ID. A transaction is a balance change between two accounts, one account that subtracts currency which is added to the opposing account. Each transaction is identified by a numeric `id`. ", required=true, schema=@Schema(allowableValues={  }, minimum="1"
+    public ResponseEntity<TanDTO> getTanByTransactionId(@Min(1)@Parameter(in = ParameterIn.PATH, description = "Gets a transaction by ID. A transaction is a balance change between two accounts, one account that subtracts currency which is added to the opposing account. Each transaction is identified by a numeric `id`. ", required=true, schema=@Schema(allowableValues={  }, minimum="1"
 )) @PathVariable("id") Integer id) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                return new ResponseEntity<InlineResponse200>(objectMapper.readValue("{\n  \"TAN\" : 1234,\n  \"id\" : 1\n}", InlineResponse200.class), HttpStatus.NOT_IMPLEMENTED);
+                TanDTO tanDTO = transactionService.getTANByTransactionId(id);
+                if (tanDTO != null) {
+                    String json = objectMapper.writeValueAsString(tanDTO);
+                    return new ResponseEntity<TanDTO>(objectMapper.readValue(json, TanDTO.class), HttpStatus.OK);
+                }
+            } catch (JsonProcessingException e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<TanDTO>(HttpStatus.INTERNAL_SERVER_ERROR);
             } catch (IOException e) {
                 log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<InlineResponse200>(HttpStatus.INTERNAL_SERVER_ERROR);
+                return new ResponseEntity<TanDTO>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
 
-        return new ResponseEntity<InlineResponse200>(HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<TanDTO>(HttpStatus.NOT_IMPLEMENTED);
     }
 
     public ResponseEntity<ReturnBodyTransaction> getTransactionById(@Min(1)@Parameter(in = ParameterIn.PATH, description = "Gets a transaction by ID. A transaction is a balance change between two accounts, one account that subtracts currency which is added to the opposing account. Each transaction is identified by a numeric `id`. ", required=true, schema=@Schema(allowableValues={  }, minimum="1"
@@ -125,14 +207,22 @@ public class TransactionsApiController implements TransactionsApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                return new ResponseEntity<ReturnBodyTransaction>(objectMapper.readValue("\"\"", ReturnBodyTransaction.class), HttpStatus.NOT_IMPLEMENTED);
+                Optional<Transaction> transaction = transactionService.getTransactionById(id);
+                if(transaction.isPresent()) {
+                    String json = objectMapper.writeValueAsString(transaction);
+                    return new ResponseEntity<ReturnBodyTransaction>(objectMapper.readValue(json, ReturnBodyTransaction.class), HttpStatus.OK);
+                } else {
+                    return new ResponseEntity<ReturnBodyTransaction>(HttpStatus.NOT_FOUND);
+                }
+            } catch (JsonProcessingException e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<ReturnBodyTransaction>(HttpStatus.INTERNAL_SERVER_ERROR);
             } catch (IOException e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<ReturnBodyTransaction>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-
-        return new ResponseEntity<ReturnBodyTransaction>(HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<ReturnBodyTransaction>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public ResponseEntity<InlineResponse2001> verifyTransactionByTan(@Min(1)@Parameter(in = ParameterIn.PATH, description = "", required=true, schema=@Schema(allowableValues={  }, minimum="1"

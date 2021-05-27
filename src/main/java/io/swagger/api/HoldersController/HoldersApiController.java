@@ -56,10 +56,10 @@ public class HoldersApiController implements HoldersApi {
     private final HttpServletRequest request;
 
     @Autowired
-    private HolderService holderService;
+    private AuthCheck authCheck;
 
     @Autowired
-    public AuthCheck authCheck;
+    private HolderService holderService;
 
     @org.springframework.beans.factory.annotation.Autowired
     public HoldersApiController(ObjectMapper objectMapper, HttpServletRequest request) {
@@ -177,10 +177,11 @@ public class HoldersApiController implements HoldersApi {
         if (accept != null && accept.contains("application/json")) {
             try {
                 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-                boolean isHolderMakingRequestOrEmployee = authCheck.isHolderMakingRequestOrEmployee(authentication, id);
+                Holder holder = holderService.getHolderById(id);
+                boolean isHolderMakingRequestOrEmployee = authCheck.isHolderMakingRequestOrEmployee(authentication, holder);
                 if (isHolderMakingRequestOrEmployee) {
-                    Holder holder = holderService.updateDailyLimitByHolderId(id, body.getDailyLimit());
-                    String json = objectMapper.writeValueAsString(holder);
+                    Holder updatedHolder = holderService.updateDailyLimitByHolderId(id, body.getDailyLimit());
+                    String json = objectMapper.writeValueAsString(updatedHolder);
                     return new ResponseEntity<BodyDailyLimit>(objectMapper.readValue(json, BodyDailyLimit.class), HttpStatus.OK);
                 } else {
                     throw new ResponseStatusException(HttpStatus.FORBIDDEN);
