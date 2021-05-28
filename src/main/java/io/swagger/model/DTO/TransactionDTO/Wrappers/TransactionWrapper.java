@@ -4,13 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.model.Transaction;
 
 public class TransactionWrapper {
-    @JsonProperty("Transaction")
     Transaction transaction;
 
-    @JsonProperty("Message")
     String message;
 
-    @JsonProperty("Succes")
     Boolean succes;
 
     public Transaction getTransaction() {
