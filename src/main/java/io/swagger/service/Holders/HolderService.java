@@ -1,6 +1,10 @@
 package io.swagger.service.Holders;
 
 import io.swagger.model.Account;
+import io.swagger.model.DTO.HolderDTO.BodyDailyLimit;
+import io.swagger.model.DTO.HolderDTO.RequestBodyHolder;
+import io.swagger.model.DTO.HolderDTO.RequestBodyUpdateHolder;
+import io.swagger.model.Enums.IncludeFrozen;
 import io.swagger.model.Enums.Role;
 import io.swagger.model.Holder;
 import io.swagger.repository.HolderRepository;
@@ -13,8 +17,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.validation.Valid;
 import java.util.List;
 
 import java.math.BigDecimal;
@@ -60,7 +66,7 @@ public class HolderService {
         }
     }
 
-    public void addInitialHolders() { // holders
+    public void addInitialHolders() {
         Random r = new SecureRandom();
         byte[] salt = new byte[20];
         r.nextBytes(salt);
@@ -92,13 +98,72 @@ public class HolderService {
         holder2.setPassword(passwordEncoder.encode(fullPassword));
         holder2.setAccounts(accounts);
         holderRepository.save(holder2);
+
+        Holder holder3 = new Holder();
+        holder3.setDailyLimit(new BigDecimal("250"));
+        holder3.setEmail("martin@stok.com");
+        holder3.setFirstName("martin");
+        holder3.setLastName("stok");
+        holder3.setRole(Role.ROLE_CUSTOMER);
+        holder3.setSalt(salt.toString());
+        holder3.setStatus(Holder.StatusEnum.FROZEN);
+        holder3.setPassword(passwordEncoder.encode(fullPassword));
+        holder3.setAccounts(accounts);
+        holderRepository.save(holder3);
+
+        Holder holder4 = new Holder();
+        holder4.setDailyLimit(new BigDecimal("250"));
+        holder4.setEmail("willem@kooiman.com");
+        holder4.setFirstName("willem");
+        holder4.setLastName("kooiman");
+        holder4.setRole(Role.ROLE_CUSTOMER);
+        holder4.setSalt(salt.toString());
+        holder4.setStatus(Holder.StatusEnum.FROZEN);
+        holder4.setPassword(passwordEncoder.encode(fullPassword));
+        holder4.setAccounts(accounts);
+        holderRepository.save(holder4);
     }
 
-    public List<Holder> getAllHolders() {
+    public Holder add(@Valid @RequestBody RequestBodyHolder body) {
+        if(holderRepository.findByEmail(body.getEmail()) == null) {
+            // create random salt
+            Random r = new SecureRandom();
+            byte[] salt = new byte[20];
+            r.nextBytes(salt);
 
-        List<Holder> holders = holderRepository.findAll();
+            // read request body
+            BigDecimal dailyLimit = body.getDailyLimit();
+            String email = body.getEmail();
+            String firstName = body.getFirstName();
+            String lastName = body.getLastName();
+            Role role = body.getRole();
+            String password = body.getPassword();
+            Holder.StatusEnum status = Holder.StatusEnum.ACTIVE;
 
-        return holders;
+            // create new holder
+            Holder holder = new Holder();
+            holder.setDailyLimit(dailyLimit);
+            holder.setEmail(email);
+            holder.setFirstName(firstName);
+            holder.setLastName(lastName);
+            holder.setRole(role);
+            holder.setSalt(salt.toString());
+            holder.setStatus(status);
+            String fullPassword = password + salt;
+            holder.setPassword(passwordEncoder.encode(fullPassword));
+            List<Account> accounts = emptyList();
+            holder.setAccounts(accounts);
+            return holderRepository.save(holder);
+        } else {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Email already in use");
+        }
+    }
+
+    public Holder getHolderById(int id) {
+
+        Holder holder = holderRepository.findById(id);
+
+        return holder;
     }
 
     public Holder getHolderByEmail(String email) {
@@ -107,57 +172,66 @@ public class HolderService {
         return holder;
     }
 
-    public Holder getHolderById(int id) {
+    public List<Holder> getAllHolders(Role role, String firstName, String lastName, IncludeFrozen includeFrozen) {
+        Holder.StatusEnum status = null;
+        if(includeFrozen != IncludeFrozen.YES) {
+            // if includeFrozen is no or empty (not Yes), where status is active
+            status = Holder.StatusEnum.ACTIVE;
+        } // if includeFrozen is yes. no where query for status. status stays null
 
-        Holder holder = holderRepository.findById(id);
+        // If first and lastName are empty set them to empty string for query. otherwise set to lowercase for case insensitive
+        firstName = firstName == null ? "" : firstName.toLowerCase();
+        lastName = lastName == null ? "" : lastName.toLowerCase();
 
-        if(holder == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Holder with id " + id + " not found");
+        List<Holder> holders = emptyList();
+        if (role != null && status != null) {
+            holders = holderRepository.searchAllHoldersByRoleAndStatus(role, firstName, lastName, status);
+        } else if(role != null && status == null) {
+            holders = holderRepository.searchAllHoldersByRole(role, firstName, lastName);
+        } else if(role == null && status != null) {
+            holders = holderRepository.searchAllHoldersByStatus(firstName, lastName, status);
+        } else {
+            // both role and status are null
+            holders = holderRepository.searchAllHolders(firstName, lastName);
         }
 
-        return holder;
+        return holders;
     }
 
-    public List<Account> getAccountsByHolderId(int id) {
-        List<Account> accounts = accountsService.getAllAccountsByHolderId(id);
+    public List<Account> getAccountsByHolderId(int id, String includeClosed) {
+        List<Account> accounts;
+        // Todo: accountsService has no function yet to filter on closed for a holder. So this will change
+        accounts = accountsService.getAllAccountsByHolderId(id);
         return accounts;
     }
 
-    public Holder add(Holder holder) {
+    public Holder updateDailyLimitByHolderId(int id, BigDecimal dailyLimit) {
+        Holder holder = getHolderById(id);
+        holder.setDailyLimit(dailyLimit);
+        return holderRepository.save(holder);
+    }
 
-        Random r = new SecureRandom();
-        byte[] salt = new byte[20];
-        r.nextBytes(salt);
+    public Holder updateHolderStatusByHolderId(int id, Holder.StatusEnum status) {
+        Holder holder = getHolderById(id);
+        holder.setStatus(status);
+        return holderRepository.save(holder);
+    }
 
-        BigDecimal dailyLimit = holder.getDailyLimit();
-        String email = holder.getEmail();
-        String firstName = holder.getFirstName();
-        String lastName = holder.getLastName();
-        Role role = holder.getRole();
-        String password = holder.getPassword();
-        Holder.StatusEnum status = holder.getStatus();
+    public Holder updateHolderByHolderId(int id, RequestBodyUpdateHolder body) {
+        Holder holder = getHolderById(id);
+        System.out.println(holder);
+        System.out.println(body.getFirstName());
+        holder.setFirstName(body.getFirstName());
+        holder.setLastName(body.getLastName());
+        holder.setEmail(body.getEmail());
+        holder.setRole(body.getRole());
+        holder.setDailyLimit(body.getDailyLimit());
+        return holderRepository.save(holder);
+    }
 
-        Holder newHolder = new Holder();
-        newHolder.setDailyLimit(dailyLimit);
-        newHolder.setEmail(email);
-        newHolder.setFirstName(firstName);
-        newHolder.setLastName(lastName);
-        newHolder.setRole(role);
-        newHolder.setSalt(salt.toString());
-        newHolder.setStatus(status);
-        String fullPassword = password + salt;
-        newHolder.setPassword(passwordEncoder.encode(fullPassword));
-        List<Account> accounts = emptyList();
-        newHolder.setAccounts(accounts);
-        System.out.println(newHolder.toString());
-        return holderRepository.save(newHolder);
-
-//        if(holderRepository.findByEmail(holder.getEmail()) == null) {
-//            holder.setPassword(passwordEncoder.encode(holder.getPassword() + holder.getSalt()));
-//            holderRepository.save(holder);
-//            return holder;
-//        } else {
-//            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Email already in use");
-//        }
+    public Holder deleteHolderById(int id) {
+        Holder holder = getHolderById(id);
+        holder.setStatus(Holder.StatusEnum.FROZEN);
+        return holder;
     }
 }
