@@ -3,6 +3,7 @@ package io.swagger.service.Holders;
 import io.swagger.model.Account;
 import io.swagger.model.DTO.HolderDTO.BodyDailyLimit;
 import io.swagger.model.DTO.HolderDTO.RequestBodyHolder;
+import io.swagger.model.DTO.HolderDTO.RequestBodyUpdateHolder;
 import io.swagger.model.Enums.IncludeFrozen;
 import io.swagger.model.Enums.Role;
 import io.swagger.model.Holder;
@@ -178,20 +179,21 @@ public class HolderService {
             status = Holder.StatusEnum.ACTIVE;
         } // if includeFrozen is yes. no where query for status. status stays null
 
-        // If first and lastName are empty set them to wildcard for query
-        if(firstName == null) firstName = "*";
-        if(lastName == null) lastName = "*";
+        // If first and lastName are empty set them to empty string for query. otherwise set to lowercase for case insensitive
+        firstName = firstName == null ? "" : firstName.toLowerCase();
+        lastName = lastName == null ? "" : lastName.toLowerCase();
 
         List<Holder> holders = emptyList();
         if (role != null && status != null) {
-            holders = holderRepository.searchAllHolders2(role, status);
-//            holders = holderRepository.searchAllHolders(role, firstName, lastName, status);
+            holders = holderRepository.searchAllHoldersByRoleAndStatus(role, firstName, lastName, status);
+        } else if(role != null && status == null) {
+            holders = holderRepository.searchAllHoldersByRole(role, firstName, lastName);
+        } else if(role == null && status != null) {
+            holders = holderRepository.searchAllHoldersByStatus(firstName, lastName, status);
         } else {
-            holders = holderRepository.searchAllHolders3(role);
+            // both role and status are null
+            holders = holderRepository.searchAllHolders(firstName, lastName);
         }
-
-
-        System.out.println(holders);
 
         return holders;
     }
@@ -206,6 +208,24 @@ public class HolderService {
     public Holder updateDailyLimitByHolderId(int id, BigDecimal dailyLimit) {
         Holder holder = getHolderById(id);
         holder.setDailyLimit(dailyLimit);
+        return holderRepository.save(holder);
+    }
+
+    public Holder updateHolderStatusByHolderId(int id, Holder.StatusEnum status) {
+        Holder holder = getHolderById(id);
+        holder.setStatus(status);
+        return holderRepository.save(holder);
+    }
+
+    public Holder updateHolderByHolderId(int id, RequestBodyUpdateHolder body) {
+        Holder holder = getHolderById(id);
+        System.out.println(holder);
+        System.out.println(body.getFirstName());
+        holder.setFirstName(body.getFirstName());
+        holder.setLastName(body.getLastName());
+        holder.setEmail(body.getEmail());
+        holder.setRole(body.getRole());
+        holder.setDailyLimit(body.getDailyLimit());
         return holderRepository.save(holder);
     }
 
