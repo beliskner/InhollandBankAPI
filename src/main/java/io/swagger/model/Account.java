@@ -33,6 +33,8 @@ public class Account extends BaseAccount  {
   @JsonProperty("balance")
   private BigDecimal balance = null;
 
+
+
   public Account holderId(Integer holderId) {
     this.holderId = holderId;
     return this;

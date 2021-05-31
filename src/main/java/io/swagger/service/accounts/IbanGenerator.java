@@ -1,5 +1,7 @@
 package io.swagger.service.accounts;
 
+import io.swagger.configuration.IbanGeneratorConfigurationProperties;
+import io.swagger.helpers.ApplicationContextHolder;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.IdentifierGenerator;
@@ -9,15 +11,18 @@ import java.util.stream.Stream;
 
 public class IbanGenerator implements IdentifierGenerator {
 
-    private static final String COUNTRY_CODE = "NL";
-    private static final String CONTROL_NUMBER = "00";
-    private static final String BANK_CODE = "INHO";
-    private static final int AMOUNT_OF_CHARACTERS_BEFORE_ACCOUNTNUMBER_STARTS = 8;
-    private static final int AMOUNT_OF_MAX_DIGITS_IN_ACCOUNT_NUMBER = 10;
-
 
     @Override
     public Serializable generate(SharedSessionContractImplementor session, Object obj) throws HibernateException {
+
+        IbanGeneratorConfigurationProperties configurationProperties = ApplicationContextHolder.getBean(IbanGeneratorConfigurationProperties.class);
+
+        String countryCode = configurationProperties.getCountryCode();
+        String bankCode = configurationProperties.getBankCode();
+        String controlNumber = configurationProperties.getControlNumber();
+        int maxDigits = configurationProperties.getMaxDigitsInAccountNumber();
+        int amountOfCharactersBeforeAccountNumberStarts = configurationProperties.getAmountOfCharactersBeforeAccountNumberStarts();
+
 
         String query = String.format("select %s from %s",
                 session.getEntityPersister(obj.getClass().getName(), obj)
@@ -29,24 +34,24 @@ public class IbanGenerator implements IdentifierGenerator {
                 .stream()
                 .filter(id -> id
                         .toString()
-                        .contains(COUNTRY_CODE + CONTROL_NUMBER + BANK_CODE));
+                        .contains(countryCode + controlNumber + bankCode));
 
         OptionalLong max = ids
                 .mapToLong(iban -> Long
                         .parseLong(iban
                             .toString()
-                            .substring(AMOUNT_OF_CHARACTERS_BEFORE_ACCOUNTNUMBER_STARTS)))
+                            .substring(amountOfCharactersBeforeAccountNumberStarts)))
                 .max();
         // als er geen geldige ibans zijn doe dit
-        if (!max.isPresent()) return COUNTRY_CODE + CONTROL_NUMBER + BANK_CODE + "0000000001";
+        if (!max.isPresent()) return countryCode + controlNumber + bankCode + "0000000001";
         //anders gebruik max om een nieuwe iban te genereren
-        return COUNTRY_CODE + CONTROL_NUMBER + BANK_CODE + createAccountNumberFromLatestId(max.getAsLong());
+        return countryCode + controlNumber + bankCode + createAccountNumberFromLatestId(max.getAsLong(), maxDigits);
 
     }
         
-    private String createAccountNumberFromLatestId(Long latestId){
+    private String createAccountNumberFromLatestId(Long latestId, int maxDigits) {
         Long newAccountNumber = latestId + 1;
-        int amountOfZeros =  AMOUNT_OF_MAX_DIGITS_IN_ACCOUNT_NUMBER -  newAccountNumber.toString().length() ;
+        int amountOfZeros =  maxDigits -  newAccountNumber.toString().length() ;
         
         StringBuilder sb = new StringBuilder();
         sb.append(newAccountNumber);

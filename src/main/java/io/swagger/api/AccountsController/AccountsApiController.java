@@ -114,13 +114,11 @@ public class AccountsApiController implements AccountsApi {
         if (accept != null && accept.contains("application/json")) {
             try {
                 List<Account> accounts =  accountsService.getAllAccounts(includeClosed);
-                List<ReturnBodyAccount> returnBodyAccounts =  MapListsHelper.mapList(accounts, ReturnBodyAccount.class);
-                return new ResponseEntity(returnBodyAccounts, HttpStatus.OK);
+                return new ResponseEntity(  mapper.map(accounts,  ArrayOfAccounts.class), HttpStatus.OK);
             } catch (Exception e) {
                 return new ResponseEntity<ArrayOfAccounts>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-
         return new ResponseEntity<ArrayOfAccounts>(HttpStatus.NOT_IMPLEMENTED);
     }
 
