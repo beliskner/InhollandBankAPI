@@ -88,9 +88,8 @@ public class TransactionService {
 
     public TransactionWrapper createTransaction(RequestBodyTransaction body, Holder holder, Boolean isEmployee, Account fromAccount) {
         Transaction transaction = modelMapper.map(body, Transaction.class);
-        TransactionWrapper wrapper = createAppropriateTransaction(transaction, holder.getId(), isEmployee, fromAccount);
 
-        return wrapper;
+        return createAppropriateTransaction(transaction, holder.getId(), isEmployee, fromAccount);
     }
 
     public Transaction createDepositTransaction(RequestBodyDeposit body, Integer performedHolderId, Boolean isEmployee) {
@@ -101,8 +100,7 @@ public class TransactionService {
 
     public TransactionWrapper createWithdrawalTransaction(RequestBodyWithdrawal body, Holder holder, Boolean isEmployee, Account fromAccount) {
         Transaction transaction = modelMapper.map(body, Transaction.class);
-        TransactionWrapper wrapper = createAppropriateTransaction(transaction, holder.getId(), isEmployee, fromAccount);
-        return wrapper;
+        return createAppropriateTransaction(transaction, holder.getId(), isEmployee, fromAccount);
     }
 
     private TransactionWrapper createAppropriateTransaction(Transaction transaction, Integer performedHolderId, Boolean isEmployee, Account fromAccount){
@@ -150,7 +148,7 @@ public class TransactionService {
     }
 
     private TransactionWrapper passesAllChecks(Transaction transaction, Account fromAccount) {
-        Boolean passesChecks = true;
+        boolean passesChecks = true;
         TransactionWrapper wrapper = new TransactionWrapper();
         if (DailyLimitExceeded(fromAccount, transaction.getAmount())) {
             passesChecks = false;
@@ -172,32 +170,20 @@ public class TransactionService {
         OffsetDateTime convertedEnd = OffsetDateTime.of(LocalDate.now(), LocalTime.MAX, ZoneOffset.UTC);
         List<Transaction> transactionsToday = transactionRepository.findAllByDatetimeLessThanEqualAndDatetimeGreaterThanEqual(convertedEnd, convertedStart).stream().filter(p -> p.getFromAccount().equals(fromAccount.getIban())).collect(Collectors.toList());
         List<BigDecimal> transactionAmountList = new ArrayList<>();
-        transactionsToday.stream().forEach((tempTrans) -> transactionAmountList.add(tempTrans.getAmount()));
+        transactionsToday.forEach((tempTrans) -> transactionAmountList.add(tempTrans.getAmount()));
         transactionAmountList.add(toBeAdded);
         BigDecimal totalTransacted = transactionAmountList.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
         Optional<Holder> holder = holderRepository.findById(fromAccount.getHolderId());
-        if (holder.get().getDailyLimit().compareTo(totalTransacted) == -1) {
-            return true;
-        } else {
-            return false;
-        }
+        return holder.get().getDailyLimit().compareTo(totalTransacted) == -1;
     }
 
     private Boolean MaxTransferExceeded(BigDecimal transferAmount, BigDecimal maxTransfer) {
-        if (maxTransfer.compareTo(transferAmount) == -1) {
-            return true;
-        } else {
-            return false;
-        }
+        return maxTransfer.compareTo(transferAmount) == -1;
     }
 
     private Boolean MinBalanceExceeded(BigDecimal transferAmount, Account account) {
         BigDecimal balanceAfterTransfer = account.getBalance().subtract(transferAmount);
-        if (balanceAfterTransfer.compareTo(account.getMinBalance())  == -1) {
-            return true;
-        } else {
-            return false;
-        }
+        return balanceAfterTransfer.compareTo(account.getMinBalance()) == -1;
     }
 
     private int createTAN() {
