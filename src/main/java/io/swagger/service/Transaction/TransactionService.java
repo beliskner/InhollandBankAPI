@@ -267,13 +267,18 @@ public class TransactionService {
         if(optionalTransaction.isPresent()) {
             Transaction transaction = optionalTransaction.get();
             if (transaction.getTAN().equals(tan)) {
-                tanVerification.setSuccess(true);
-                tanVerification.setMessage("TAN Correct. Transaction approved.");
-
-                updateBalancesByTransaction(transaction);
-                transaction.setDatetime(OffsetDateTime.now());
-                transaction.setStatus(Transaction.StatusEnum.APPROVED);
-                transactionRepository.save(transaction);
+                TransactionWrapper wrapper = passesAllChecks(transaction, accountsRepo.findById(transaction.getFromAccount()).get());
+                if (wrapper.getSucces()) {
+                    tanVerification.setSuccess(true);
+                    tanVerification.setMessage("TAN Correct. Transaction approved.");
+                    updateBalancesByTransaction(transaction);
+                    transaction.setDatetime(OffsetDateTime.now());
+                    transaction.setStatus(Transaction.StatusEnum.APPROVED);
+                    transactionRepository.save(transaction);
+                } else {
+                    tanVerification.setMessage("Payment not finalized. The payment exceeds accounts minimum balance requirement, maximum transfer or it exceeds the holder's daily limit.");
+                    tanVerification.setSuccess(false);
+                }
             } else {
                 tanVerification.setSuccess(false);
                 tanVerification.setMessage("TAN incorrect.");
