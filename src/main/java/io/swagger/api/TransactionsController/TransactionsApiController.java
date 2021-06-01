@@ -3,6 +3,7 @@ package io.swagger.api.TransactionsController;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.Api;
 import io.swagger.model.Account;
+import io.swagger.model.BaseModels.BaseAccount;
 import io.swagger.model.BaseModels.BaseTransaction;
 import io.swagger.model.DTO.TransactionDTO.*;
 import io.swagger.model.Body;
@@ -13,6 +14,7 @@ import io.swagger.service.Transaction.TransactionService;
 import io.swagger.service.accounts.AccountsService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,6 +37,7 @@ import javax.validation.constraints.*;
 import javax.validation.Valid;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -74,12 +77,18 @@ public class TransactionsApiController implements TransactionsApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             Optional<Account> fromAccount = accountsService.getAccountByIban(body.getFromAccount());
-            if(body.getToAccount() != null && !accountsService.getAccountByIban(body.getToAccount()).isPresent()) {
+            Optional<Account> toAccount = accountsService.getAccountByIban((body.getToAccount()));
+            if(body.getToAccount() != null && !toAccount.isPresent()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No account with IBAN " + body.getToAccount() + " found.");
             } else if (body.getFromAccount() != null && !fromAccount.isPresent()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No account with IBAN " + body.getFromAccount() + " found.");
             } else if(body.getTransactionType().toString() != BaseTransaction.TransactionTypeEnum.TRANSFER.toString() && body.getTransactionType().toString() != BaseTransaction.TransactionTypeEnum.REFUND.toString()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Specified transaction type: '"+ body.getTransactionType().toString() + "' incorrect, must be Transfer or Refund");
+            } else if((toAccount.get().getAccountType() == BaseAccount.AccountTypeEnum.SAVINGS || fromAccount.get().getAccountType() == BaseAccount.AccountTypeEnum.SAVINGS)
+                    && toAccount.get().getHolderId() != fromAccount.get().getHolderId()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Accounts " + body.getFromAccount() + " and " + body.getToAccount() + " are not owned by the same Holder.");
+            } else if(body.getAmount().compareTo(BigDecimal.ZERO) < 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can not transfer negative amounts of money.");
             }
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             int performedHolderId = holderService.getHolderByEmail(authentication.getName()).getId();
@@ -104,9 +113,12 @@ public class TransactionsApiController implements TransactionsApi {
             Optional<Account> toAccount = accountsService.getAccountByIban(body.getToAccount());
             if(body.getToAccount() != null && !toAccount.isPresent()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No account with IBAN " + body.getToAccount() + " found.");
-            }
-            if(body.getTransactionType().toString() != BaseTransaction.TransactionTypeEnum.DEPOSIT.toString()) {
+            } else if(body.getTransactionType().toString() != BaseTransaction.TransactionTypeEnum.DEPOSIT.toString()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Specified transaction type: '"+ body.getTransactionType().toString() + "' incorrect. must be Deposit");
+            } else if(toAccount.get().getAccountType() == BaseAccount.AccountTypeEnum.SAVINGS) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot directly deposit money to a savings account, operation must be done through a current account");
+            } else if(body.getAmount().compareTo(BigDecimal.ZERO) < 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can not transfer negative amounts of money.");
             }
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             int performedHolderId = holderService.getHolderByEmail(authentication.getName()).getId();
@@ -130,9 +142,12 @@ public class TransactionsApiController implements TransactionsApi {
             Optional<Account> fromAccount = accountsService.getAccountByIban(body.getFromAccount());
             if(body.getFromAccount() != null && !fromAccount.isPresent()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No account with IBAN " + body.getFromAccount() + " found.");
-            }
-            if(body.getTransactionType().toString() != BaseTransaction.TransactionTypeEnum.WITHDRAWAL.toString()) {
+            } else if(body.getTransactionType().toString() != BaseTransaction.TransactionTypeEnum.WITHDRAWAL.toString()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Specified transaction type: '"+ body.getTransactionType().toString() + "' incorrect, must be Withdrawal");
+            } else if(fromAccount.get().getAccountType() == BaseAccount.AccountTypeEnum.SAVINGS) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot directly withdraw money from a savings account, operation must be done through a current account");
+            } else if(body.getAmount().compareTo(BigDecimal.ZERO) < 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can not transfer negative amounts of money.");
             }
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             int performedHolderId = holderService.getHolderByEmail(authentication.getName()).getId();
@@ -151,10 +166,10 @@ public class TransactionsApiController implements TransactionsApi {
     }
 
     @PreAuthorize("hasRole('EMPLOYEE')")
-    public ResponseEntity<ArrayOfTransactions> getAllTransactions(@Parameter(in = ParameterIn.QUERY, description = "Gets all transactions involving given IBAN" ,schema=@Schema()) @Valid @RequestParam(value = "iban", required = false) String iban,@Parameter(in = ParameterIn.QUERY, description = "Filter transactions from a start date (if no end date is defined end date is datetime.now)" ,schema=@Schema()) @Valid @RequestParam(value = "startDate", required = false) LocalDate startDate,@Parameter(in = ParameterIn.QUERY, description = "Filter transactions until specified date (if no start date is defined, first transaction is start date)" ,schema=@Schema()) @Valid @RequestParam(value = "endDate", required = false) LocalDate endDate) {
+    public ResponseEntity<ArrayOfTransactions> getAllTransactions(@Parameter(in = ParameterIn.QUERY, description = "Gets all transactions involving given IBAN" ,schema=@Schema()) @Valid @RequestParam(value = "iban", required = false) String iban, @Parameter(in = ParameterIn.QUERY, description = "Filter transactions from a start date (if no end date is defined end date is datetime.now)" ,schema=@Schema()) @Valid @RequestParam(value = "startDate", required = false) String startDate, @Parameter(in = ParameterIn.QUERY, description = "Filter transactions until specified date (if no start date is defined, first transaction is start date)" ,schema=@Schema()) @Valid @RequestParam(value = "endDate", required = false)String endDate) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
-            List<Transaction> transactionsList = transactionService.getAllTransactions();
+            List<Transaction> transactionsList = transactionService.getAllTransactions(iban, startDate, endDate);
             if (!transactionsList.isEmpty()) {
                 return new ResponseEntity(modelMapper.map(transactionsList, ArrayOfTransactions.class), HttpStatus.OK);
             } else {

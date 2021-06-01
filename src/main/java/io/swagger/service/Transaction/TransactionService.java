@@ -2,27 +2,29 @@ package io.swagger.service.Transaction;
 
 import io.swagger.model.Account;
 import io.swagger.model.BaseModels.BaseTransaction;
-import io.swagger.model.DTO.AccountDTO.ArrayOfAccounts;
 import io.swagger.model.DTO.TransactionDTO.*;
 import io.swagger.model.Transaction;
 import io.swagger.repository.AccountsRepo;
 import io.swagger.repository.TransactionRepository;
 import io.swagger.service.accounts.AccountsService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.LocalTime;
 import org.threeten.bp.OffsetDateTime;
+import org.threeten.bp.ZoneOffset;
+import org.threeten.bp.format.DateTimeFormatter;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
+import java.util.stream.Collectors;
 
 import static io.swagger.helpers.MapListsHelper.modelMapper;
 
 @Service
 public class TransactionService {
+
     @Autowired
     private TransactionRepository transactionRepository;
 
@@ -32,21 +34,56 @@ public class TransactionService {
     @Autowired
     private AccountsRepo accountsRepo;
 
-    public List<Transaction> getAllTransactions() {
-        List<Transaction> transactions = transactionRepository.findAll();
+    private List<Transaction> getTransactionsForIbanForToday(String iban) {
+        OffsetDateTime convertedStart = OffsetDateTime.of(LocalDate.now(), LocalTime.MIN, ZoneOffset.UTC);
+        OffsetDateTime convertedEnd = OffsetDateTime.of(LocalDate.now(), LocalTime.MAX, ZoneOffset.UTC);
+        List<Transaction> transactions = transactionRepository.findAllByDatetimeLessThanEqualAndDatetimeGreaterThanEqual(convertedEnd, convertedStart);
 
+        return transactions.stream().filter(p -> p.getFromAccount().equals(iban)).collect(Collectors.toList());
+    }
+
+    private LocalDate convertStringToDate(String date) {
+        return LocalDate.parse(date);
+    }
+
+    public List<Transaction> getAllTransactions(String iban, String startDate, String endDate) {
+        List<Transaction> transactions;
+        if (iban != null && (startDate == null && endDate == null)) {
+            transactions = transactionRepository.findAllByIban(iban);
+        } else if (startDate!= null || endDate != null) {
+            OffsetDateTime convertedStartDate;
+            OffsetDateTime convertedEndDate;
+            if (startDate == null) {
+                convertedStartDate = OffsetDateTime.parse("2021-05-31T00:00:00+02:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+            } else {
+                convertedStartDate = OffsetDateTime.of(convertStringToDate(startDate), LocalTime.MIN, ZoneOffset.UTC);
+            }
+            if (endDate == null) {
+                convertedEndDate = OffsetDateTime.now();
+            } else {
+                convertedEndDate = OffsetDateTime.of(convertStringToDate(endDate), LocalTime.MAX, ZoneOffset.UTC);
+            }
+            if (iban == null) {
+                transactions = transactionRepository.findAllByDatetimeLessThanEqualAndDatetimeGreaterThanEqual(convertedEndDate, convertedStartDate);
+            } else {
+                List<Transaction> allTransactionsByDate = transactionRepository.findAllByDatetimeLessThanEqualAndDatetimeGreaterThanEqual(convertedEndDate, convertedStartDate);
+                transactions = allTransactionsByDate.stream().filter(p -> p.getFromAccount().equals(iban)).collect(Collectors.toList());
+            }
+
+        }else {
+            transactions = transactionRepository.findAll();
+        }
         return transactions;
     }
 
     public Optional<Transaction> getTransactionById(Integer id) {
-        Optional<Transaction> transaction = transactionRepository.findById(id);
-        return transaction;
+        return transactionRepository.findById(id);
     }
 
     public TanDTO getTANByTransactionId(Integer id) {
         Optional<Transaction> transaction = transactionRepository.findById(id);
         TanDTO tanDTO = new TanDTO();
-        tanDTO.setTAN(transaction.get().getTAN());
+        transaction.ifPresent(value -> tanDTO.setTAN(value.getTAN()));
 
         return tanDTO;
     }
@@ -87,6 +124,7 @@ public class TransactionService {
     private Transaction createAppropriateTransaction(Transaction transaction, Integer performedHolderId, Boolean isEmployee){
         Transaction appropriateTransaction = new Transaction();
         appropriateTransaction.setDatetime(OffsetDateTime.now());
+        System.out.println(OffsetDateTime.now());
         appropriateTransaction.setTransactionType(transaction.getTransactionType());
         appropriateTransaction.setPerformedHolder(performedHolderId);
         if(transaction.getFromAccount() != null) {
@@ -107,11 +145,15 @@ public class TransactionService {
         return appropriateTransaction;
     }
 
+    private Boolean passesAllChecks(Transaction transaction) {
+        return false;
+    }
+
     private int createTAN() {
         return (int) ((Math.random() * (9999 - 1000)) + 1000);
     }
 
-    private void addToAccountBalanceByIban(String iban, BigDecimal balanceUpdate){
+    private Boolean addToAccountBalanceByIban(String iban, BigDecimal balanceUpdate){
         Optional<Account> optionalAccount = accountsService.getAccountByIban(iban);
         if(optionalAccount.isPresent()) {
             Account account = optionalAccount.get();
@@ -119,28 +161,36 @@ public class TransactionService {
             account.setBalance(account.getBalance().add(balanceUpdate));
             accountsRepo.save(account);
             Optional<Account> toBeCheckAccount = accountsService.getAccountByIban(account.getIban());
-            if(toBeCheckAccount.isPresent() && toBeCheckAccount.get().getBalance() != account.getBalance()) {
+            if(toBeCheckAccount.isPresent() && !toBeCheckAccount.get().getBalance().equals(account.getBalance())) {
                 account.setBalance(oldBalance);
                 accountsRepo.save(account);
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Account balance for account: " + toBeCheckAccount.get().getIban() + " could not be updated");
+                return false;
+                //throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Account balance for account: " + toBeCheckAccount.get().getIban() + " could not be updated");
             }
+            return true;
         }
+        return false;
     }
 
-    private void subtractFromAccountBalanceByIban(String iban, BigDecimal balanceUpdate) {
+    private Boolean subtractFromAccountBalanceByIban(String iban, BigDecimal balanceUpdate) {
         Optional<Account> optionalAccount = accountsService.getAccountByIban(iban);
         if (optionalAccount.isPresent()) {
             Account account = optionalAccount.get();
             BigDecimal oldBalance = account.getBalance();
-            account.setBalance(account.getBalance().subtract(balanceUpdate));
+            BigDecimal newBalance = oldBalance.subtract(balanceUpdate);
+            // if (newBalance < account.getMinBalance())
+            account.setBalance(newBalance);
             accountsRepo.save(account);
             Optional<Account> toBeCheckAccount = accountsService.getAccountByIban(account.getIban());
-            if(toBeCheckAccount.isPresent() && toBeCheckAccount.get().getBalance() != account.getBalance()) {
+            if(toBeCheckAccount.isPresent() && !toBeCheckAccount.get().getBalance().equals(account.getBalance())) {
                 account.setBalance(oldBalance);
                 accountsRepo.save(account);
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Account balance for account: " + toBeCheckAccount.get().getIban() + " could not be updated");
+                return false;
+                //throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Account balance for account: " + toBeCheckAccount.get().getIban() + " could not be updated");
             }
+            return true;
         }
+        return false;
     }
 
     private void updateBalancesByTransaction(Transaction transaction) {
@@ -153,11 +203,7 @@ public class TransactionService {
     }
 
     private Boolean tanRequired(BaseTransaction.TransactionTypeEnum transactionType) {
-        if(transactionType == BaseTransaction.TransactionTypeEnum.DEPOSIT || transactionType == BaseTransaction.TransactionTypeEnum.WITHDRAWAL) {
-            return false;
-        } else {
-            return true;
-        }
+        return transactionType != BaseTransaction.TransactionTypeEnum.DEPOSIT && transactionType != BaseTransaction.TransactionTypeEnum.WITHDRAWAL;
     }
 
     public TanVerificationDTO verifyTransactionByTan(Integer id, Integer tan) {
