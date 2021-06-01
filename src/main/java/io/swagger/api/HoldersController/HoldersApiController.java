@@ -1,6 +1,8 @@
 package io.swagger.api.HoldersController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.Api;
+import io.swagger.api.NotFoundException;
 import io.swagger.helpers.MapListsHelper;
 import io.swagger.model.Account;
 import io.swagger.model.DTO.AccountDTO.ArrayOfAccounts;
@@ -11,12 +13,15 @@ import io.swagger.model.DTO.HolderDTO.RequestBodyHolder;
 import io.swagger.model.DTO.HolderDTO.RequestBodyUpdateHolder;
 import io.swagger.model.DTO.HolderDTO.ReturnBodyHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.model.Enums.IncludeFrozen;
+import io.swagger.model.Enums.Role;
 import io.swagger.model.Holder;
 import io.swagger.security.AuthCheck;
 import io.swagger.service.Holders.HolderService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,16 +30,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.server.ResponseStatusException;
 
+import javax.security.auth.login.AccountException;
 import javax.validation.constraints.*;
 import javax.validation.Valid;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.io.InvalidObjectException;
 import java.lang.reflect.Array;
+import java.util.Collections;
 import java.util.List;
 
 import static io.swagger.helpers.MapListsHelper.modelMapper;
@@ -47,6 +57,8 @@ public class HoldersApiController implements HoldersApi {
     private static final Logger log = LoggerFactory.getLogger(HoldersApiController.class);
 
     private final ObjectMapper objectMapper;
+
+    private ModelMapper mapper;
 
     private final HttpServletRequest request;
 
@@ -62,33 +74,35 @@ public class HoldersApiController implements HoldersApi {
         this.request = request;
     }
 
+    @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<ReturnBodyHolder> createHolder(@Parameter(in = ParameterIn.DEFAULT, description = "Request body to create a new holder", required=true, schema=@Schema()) @Valid @RequestBody RequestBodyHolder body) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                return new ResponseEntity<ReturnBodyHolder>(objectMapper.readValue("\"\"", ReturnBodyHolder.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
+                Holder holder = holderService.add(body);
+                return new ResponseEntity(holder, HttpStatus.OK);
+            } catch (Exception e) {
                 log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<ReturnBodyHolder>(HttpStatus.INTERNAL_SERVER_ERROR);
+                return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-
-        return new ResponseEntity<ReturnBodyHolder>(HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<ReturnBodyHolder>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
+    @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<ReturnBodyHolder> deleteHolderById(@Min(1)@Parameter(in = ParameterIn.PATH, description = "Deletes a holder by ID. A holder is a person/entity with a portfolio of accounts Each holder is identified by a numeric `id`. ", required=true, schema=@Schema(allowableValues={  }, minimum="1"
 )) @PathVariable("id") Integer id) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                return new ResponseEntity<ReturnBodyHolder>(objectMapper.readValue("\"\"", ReturnBodyHolder.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
+                Holder holder = holderService.deleteHolderById(id);
+                return new ResponseEntity(holder, HttpStatus.OK);
+            } catch (Exception e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<ReturnBodyHolder>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
 
-        return new ResponseEntity<ReturnBodyHolder>(HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<ReturnBodyHolder>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public ResponseEntity<ArrayOfAccounts> getAccountsByHolderId(@Min(1)@Parameter(in = ParameterIn.PATH, description = "A holder is a person/entity with a portfolio of accounts Each holder is identified by a numeric `id`. ", required=true, schema=@Schema(allowableValues={  }, minimum="1"
@@ -96,8 +110,19 @@ public class HoldersApiController implements HoldersApi {
 )) @Valid @RequestParam(value = "includeClosed", required = false) String includeClosed) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
-            ArrayOfAccounts accounts = modelMapper.map(holderService.getAccountsByHolderId(id), ArrayOfAccounts.class);
-            return new ResponseEntity(accounts, HttpStatus.OK);
+            try {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                Holder holder = holderService.getHolderById(id);
+                if (authCheck.isHolderMakingRequestOrEmployee(authentication, holder)) {
+                    List<Account> accounts = holderService.getAccountsByHolderId(id, includeClosed);
+                    return new ResponseEntity(accounts, HttpStatus.OK);
+                } else {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+                }
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<ArrayOfAccounts>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
 
         return new ResponseEntity<ArrayOfAccounts>(HttpStatus.NOT_IMPLEMENTED);
@@ -105,16 +130,15 @@ public class HoldersApiController implements HoldersApi {
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<ArrayOfHolders> getAllHolders(@Parameter(in = ParameterIn.QUERY, description = "" ,schema=@Schema(allowableValues={ "Customer", "Employee" }
-)) @Valid @RequestParam(value = "role", required = false) String role,@Parameter(in = ParameterIn.QUERY, description = "Filter by first name" ,schema=@Schema()) @Valid @RequestParam(value = "firstName", required = false) String firstName,@Parameter(in = ParameterIn.QUERY, description = "Filter by last name" ,schema=@Schema()) @Valid @RequestParam(value = "lastName", required = false) String lastName,@Parameter(in = ParameterIn.QUERY, description = "Include frozen holders to the results of all holders or not" ,schema=@Schema(allowableValues={ "No", "Yes" }
+)) @Valid @RequestParam(value = "role", required = false) String role,@Parameter(in = ParameterIn.QUERY, description = "Filter by first name" ,schema=@Schema()) @Valid @RequestParam(value = "firstName", required = false) String firstName,@Parameter(in = ParameterIn.QUERY, description = "Filter by last name" ,schema=@Schema()) @Valid @RequestParam(value = "lastName", required = false) String lastName,@Parameter(in = ParameterIn.QUERY, description = "Include frozen holders to the results of all holders or not" , schema=@Schema(allowableValues={ "No", "Yes" }
 )) @Valid @RequestParam(value = "includeFrozen", required = false) String includeFrozen) {
         String accept = request.getHeader("Accept");
-        // TODO: accept contains is now always */*, fix later
-        if (accept != null  ) { // && accept.contains("application/json")
+        if (accept != null && accept.contains("application/json")) {
             try {
-                List<Holder> holders = holderService.getAllHolders();
-                List<ReturnBodyHolder> returnBodyHolders = MapListsHelper.mapList(holders, ReturnBodyHolder.class);
-                return new ResponseEntity(returnBodyHolders, HttpStatus.OK);
-            } catch (Exception e) {
+                List<Holder> holders = holderService.getAllHolders(Role.fromValue(role), firstName, lastName, IncludeFrozen.fromValue(includeFrozen));
+                String json = objectMapper.writeValueAsString(holders);
+                return new ResponseEntity<ArrayOfHolders>(objectMapper.readValue(json, ArrayOfHolders.class), HttpStatus.OK);
+            } catch (IOException e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<ArrayOfHolders>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
@@ -127,33 +151,17 @@ public class HoldersApiController implements HoldersApi {
 )) @PathVariable("id") Integer id) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
-            ReturnBodyHolder returnBodyHolder = modelMapper.map(holderService.getHolderById(id), ReturnBodyHolder.class);
-            return new ResponseEntity<ReturnBodyHolder>(returnBodyHolder, HttpStatus.OK);
-        }
-        return new ResponseEntity<ReturnBodyHolder>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<BodyDailyLimit> updateDailyLimitByHolderId(@Min(1)@Parameter(in = ParameterIn.PATH, description = "Updates a holder by ID. A holder is a person/entity with a portfolio of accounts Each holder is identified by a numeric `id`. ", required=true, schema=@Schema(allowableValues={  }, minimum="1"
-)) @PathVariable("id") Integer id,@Parameter(in = ParameterIn.DEFAULT, description = "Request body to update a holder", required=true, schema=@Schema()) @Valid @RequestBody BodyDailyLimit body) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
             try {
-                return new ResponseEntity<BodyDailyLimit>(objectMapper.readValue("{\n  \"dailyLimit\" : 500\n}", BodyDailyLimit.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<BodyDailyLimit>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<BodyDailyLimit>(HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    public ResponseEntity<ReturnBodyHolder> updateHolderById(@Min(1)@Parameter(in = ParameterIn.PATH, description = "Updates a holder by ID. A holder is a person/entity with a portfolio of accounts Each holder is identified by a numeric `id`. ", required=true, schema=@Schema(allowableValues={  }, minimum="1"
-)) @PathVariable("id") Integer id,@Parameter(in = ParameterIn.DEFAULT, description = "Request body to update a holder", required=true, schema=@Schema()) @Valid @RequestBody RequestBodyUpdateHolder body) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<ReturnBodyHolder>(objectMapper.readValue("\"\"", ReturnBodyHolder.class), HttpStatus.NOT_IMPLEMENTED);
+                Holder holder = holderService.getHolderById(id);
+                if (holder != null) {
+                    String json = objectMapper.writeValueAsString(holder);
+                    return new ResponseEntity<ReturnBodyHolder>(objectMapper.readValue(json, ReturnBodyHolder.class), HttpStatus.OK);
+                } else {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Holder with id " + id + " not found");
+                }
+            } catch(JsonProcessingException e) {
+                log.error("Couldn't process Json", e);
+                return new ResponseEntity<ReturnBodyHolder>(HttpStatus.INTERNAL_SERVER_ERROR);
             } catch (IOException e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<ReturnBodyHolder>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -163,13 +171,56 @@ public class HoldersApiController implements HoldersApi {
         return new ResponseEntity<ReturnBodyHolder>(HttpStatus.NOT_IMPLEMENTED);
     }
 
+    public ResponseEntity<BodyDailyLimit> updateDailyLimitByHolderId(@Min(1)@Parameter(in = ParameterIn.PATH, description = "Updates a holder by ID. A holder is a person/entity with a portfolio of accounts Each holder is identified by a numeric `id`. ", required=true, schema=@Schema(allowableValues={  }, minimum="1"
+)) @PathVariable("id") Integer id,@Parameter(in = ParameterIn.DEFAULT, description = "Request body to update a holder", required=true, schema=@Schema()) @Valid @RequestBody BodyDailyLimit body) {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                Holder holder = holderService.getHolderById(id);
+                if (authCheck.isHolderMakingRequestOrEmployee(authentication, holder)) {
+                    Holder updatedHolder = holderService.updateDailyLimitByHolderId(id, body.getDailyLimit());
+                    String json = objectMapper.writeValueAsString(updatedHolder);
+                    return new ResponseEntity<BodyDailyLimit>(objectMapper.readValue(json, BodyDailyLimit.class), HttpStatus.OK);
+                } else {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+                }
+            } catch (IOException e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<BodyDailyLimit>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        return new ResponseEntity<BodyDailyLimit>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<ReturnBodyHolder> updateHolderById(@Min(1)@Parameter(in = ParameterIn.PATH, description = "Updates a holder by ID. A holder is a person/entity with a portfolio of accounts Each holder is identified by a numeric `id`. ", required=true, schema=@Schema(allowableValues={  }, minimum="1"
+)) @PathVariable("id") Integer id,@Parameter(in = ParameterIn.DEFAULT, description = "Request body to update a holder", required=true, schema=@Schema()) @Valid @RequestBody RequestBodyUpdateHolder body) {
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            try {
+                Holder holder = holderService.updateHolderByHolderId(id, body);
+                return new ResponseEntity(holder, HttpStatus.OK);
+            } catch (Exception e) {
+                log.error("Couldn't serialize response for content type application/json", e);
+                return new ResponseEntity<ReturnBodyHolder>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        return new ResponseEntity<ReturnBodyHolder>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<BodyHolderStatus> updateHolderStatusByHolderId(@Min(1)@Parameter(in = ParameterIn.PATH, description = "Updates a holder by ID. A holder is a person/entity with a portfolio of accounts Each holder is identified by a numeric `id`. ", required=true, schema=@Schema(allowableValues={  }, minimum="1"
 )) @PathVariable("id") Integer id,@Parameter(in = ParameterIn.DEFAULT, description = "Request body to update a holder's status", required=true, schema=@Schema()) @Valid @RequestBody BodyHolderStatus body) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                return new ResponseEntity<BodyHolderStatus>(objectMapper.readValue("{\n  \"status\" : \"Active\"\n}", BodyHolderStatus.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
+                Holder.StatusEnum status = mapper.map(body.getStatus(), Holder.StatusEnum.class);
+                Holder holder = holderService.updateHolderStatusByHolderId(id, status);
+                return new ResponseEntity(holder, HttpStatus.OK);
+            } catch (Exception e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<BodyHolderStatus>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
