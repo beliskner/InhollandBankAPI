@@ -6,7 +6,7 @@
 package io.swagger.api.AuthController;
 
 import io.swagger.model.ResponseCodes.Error;
-import io.swagger.model.ResponseCodes.InlineResponse201;
+import io.swagger.model.DTO.AuthDTO.TokenResponse;
 import io.swagger.model.DTO.AuthDTO.Login;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,22 +30,12 @@ public interface AuthApi {
 
     @Operation(summary = "Login a Holder", description = "", tags={ "Auth" })
     @ApiResponses(value = { 
-        @ApiResponse(responseCode = "201", description = "Logged in", content = @Content(schema = @Schema(implementation = InlineResponse201.class))),
+        @ApiResponse(responseCode = "201", description = "Logged in", content = @Content(schema = @Schema(implementation = TokenResponse.class))),
         
         @ApiResponse(responseCode = "401", description = "Authorization information is missing or invalid.", content = @Content(schema = @Schema(implementation = Error.class))) })
     @RequestMapping(value = "/auth/login",
         produces = { "application/json" }, 
         consumes = { "application/json" }, 
         method = RequestMethod.POST)
-    ResponseEntity<InlineResponse201> loginHolder(@Parameter(in = ParameterIn.DEFAULT, description = "Request body to login a holder", required=true, schema=@Schema()) @Valid @RequestBody Login body);
-
-
-    @Operation(summary = "Logs the user out by invalidating their token", description = "", security = {
-        @SecurityRequirement(name = "bearerAuth")    }, tags={ "Auth" })
-    @ApiResponses(value = { 
-        @ApiResponse(responseCode = "200", description = "Logged out") })
-    @RequestMapping(value = "/auth/logout",
-        method = RequestMethod.POST)
-    ResponseEntity<Void> logoutHolder();
-
+    ResponseEntity<TokenResponse> loginHolder(@Parameter(in = ParameterIn.DEFAULT, description = "Request body to login a holder", required=true, schema=@Schema()) @Valid @RequestBody Login body);
 }
