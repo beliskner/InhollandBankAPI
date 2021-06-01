@@ -89,37 +89,19 @@ public class TransactionService {
     public TransactionWrapper createTransaction(RequestBodyTransaction body, Holder holder, Boolean isEmployee, Account fromAccount) {
         Transaction transaction = modelMapper.map(body, Transaction.class);
         TransactionWrapper wrapper = createAppropriateTransaction(transaction, holder.getId(), isEmployee, fromAccount);
-        if(!tanRequired(wrapper.getTransaction().getTransactionType()) || isEmployee) {
-            updateBalancesByTransaction(wrapper.getTransaction());
-        }
-        if (wrapper.getSucces()) {
-            transactionRepository.save(wrapper.getTransaction());
-        }
 
         return wrapper;
     }
 
     public Transaction createDepositTransaction(RequestBodyDeposit body, Integer performedHolderId, Boolean isEmployee) {
         Transaction transaction = modelMapper.map(body, Transaction.class);
-        Transaction appropriateTransaction = createAppropriateTransaction(transaction, performedHolderId, isEmployee, new Account()).getTransaction();
-        if(!tanRequired(appropriateTransaction.getTransactionType()) || isEmployee) {
-            updateBalancesByTransaction(appropriateTransaction);
-        }
-        transactionRepository.save(appropriateTransaction);
 
-        return appropriateTransaction;
+        return createAppropriateTransaction(transaction, performedHolderId, isEmployee, new Account()).getTransaction();
     }
 
     public TransactionWrapper createWithdrawalTransaction(RequestBodyWithdrawal body, Holder holder, Boolean isEmployee, Account fromAccount) {
         Transaction transaction = modelMapper.map(body, Transaction.class);
         TransactionWrapper wrapper = createAppropriateTransaction(transaction, holder.getId(), isEmployee, fromAccount);
-        if(!tanRequired(wrapper.getTransaction().getTransactionType()) || isEmployee) {
-            updateBalancesByTransaction(wrapper.getTransaction());
-        }
-        if (wrapper.getSucces()) {
-            transactionRepository.save(wrapper.getTransaction());
-        }
-
         return wrapper;
     }
 
@@ -152,6 +134,18 @@ public class TransactionService {
             wrapper.setSucces(true);
             wrapper.setTransaction(appropriateTransaction);
         }
+        if(wrapper.getSucces() && (!tanRequired(wrapper.getTransaction().getTransactionType()) || isEmployee)) {
+            Boolean balancesUpdated = updateBalancesByTransaction(wrapper.getTransaction());
+            if(!balancesUpdated) {
+                wrapper.setSucces(false);
+                wrapper.setMessage("Balances could not be updated");
+            } else {
+                transactionRepository.save(wrapper.getTransaction());
+            }
+        } else if(wrapper.getSucces()) {
+            transactionRepository.save(wrapper.getTransaction());
+        }
+
         return wrapper;
     }
 
@@ -248,13 +242,15 @@ public class TransactionService {
         return false;
     }
 
-    private void updateBalancesByTransaction(Transaction transaction) {
+    private Boolean updateBalancesByTransaction(Transaction transaction) {
+        Boolean updateBalancesSuccessful = true;
         if(transaction.getToAccount() != null) {
-            addToAccountBalanceByIban(transaction.getToAccount(), transaction.getAmount());
+            updateBalancesSuccessful = addToAccountBalanceByIban(transaction.getToAccount(), transaction.getAmount());
         }
         if(transaction.getFromAccount() != null) {
-            subtractFromAccountBalanceByIban(transaction.getFromAccount(), transaction.getAmount());
+            updateBalancesSuccessful = subtractFromAccountBalanceByIban(transaction.getFromAccount(), transaction.getAmount());
         }
+        return updateBalancesSuccessful;
     }
 
     private Boolean tanRequired(BaseTransaction.TransactionTypeEnum transactionType) {
@@ -269,12 +265,17 @@ public class TransactionService {
             if (transaction.getTAN().equals(tan)) {
                 TransactionWrapper wrapper = passesAllChecks(transaction, accountsRepo.findById(transaction.getFromAccount()).get());
                 if (wrapper.getSucces()) {
-                    tanVerification.setSuccess(true);
-                    tanVerification.setMessage("TAN Correct. Transaction approved.");
-                    updateBalancesByTransaction(transaction);
-                    transaction.setDatetime(OffsetDateTime.now());
-                    transaction.setStatus(Transaction.StatusEnum.APPROVED);
-                    transactionRepository.save(transaction);
+                    Boolean updateBalances = updateBalancesByTransaction(transaction);
+                    if (updateBalances) {
+                        tanVerification.setSuccess(true);
+                        tanVerification.setMessage("TAN Correct. Transaction approved.");
+                        transaction.setDatetime(OffsetDateTime.now());
+                        transaction.setStatus(Transaction.StatusEnum.APPROVED);
+                        transactionRepository.save(transaction);
+                    } else {
+                        tanVerification.setSuccess(false);
+                        tanVerification.setMessage("Balances could not be updated due to database error");
+                    }
                 } else {
                     tanVerification.setMessage("Payment not finalized. The payment exceeds accounts minimum balance requirement, maximum transfer or it exceeds the holder's daily limit.");
                     tanVerification.setSuccess(false);
