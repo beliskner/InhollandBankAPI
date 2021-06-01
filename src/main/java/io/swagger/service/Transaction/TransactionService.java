@@ -215,7 +215,8 @@ public class TransactionService {
         if(optionalAccount.isPresent()) {
             Account account = optionalAccount.get();
             BigDecimal oldBalance = account.getBalance();
-            account.setBalance(account.getBalance().add(balanceUpdate));
+            BigDecimal newBalance = account.getBalance().add(balanceUpdate);
+            account.setBalance(newBalance);
             accountsRepo.save(account);
             Optional<Account> toBeCheckAccount = accountsService.getAccountByIban(account.getIban());
             if(toBeCheckAccount.isPresent() && !toBeCheckAccount.get().getBalance().equals(account.getBalance())) {
