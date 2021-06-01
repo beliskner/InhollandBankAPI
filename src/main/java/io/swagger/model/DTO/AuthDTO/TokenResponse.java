@@ -1,4 +1,4 @@
-package io.swagger.model.ResponseCodes;
+package io.swagger.model.DTO.AuthDTO;
 
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,13 +11,11 @@ import org.springframework.validation.annotation.Validated;
 @Schema(description = "Return the token")
 @Validated
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
-
-
-public class InlineResponse201   {
+public class TokenResponse {
   @JsonProperty("token")
   private String token = null;
 
-  public InlineResponse201 token(String token) {
+  public TokenResponse token(String token) {
     this.token = token;
     return this;
   }
@@ -27,8 +25,7 @@ public class InlineResponse201   {
    * @return token
    **/
   @Schema(example = "AVeryCoolEncryptedToken", description = "")
-  
-    public String getToken() {
+  public String getToken() {
     return token;
   }
 
@@ -45,8 +42,8 @@ public class InlineResponse201   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    InlineResponse201 inlineResponse201 = (InlineResponse201) o;
-    return Objects.equals(this.token, inlineResponse201.token);
+    TokenResponse tokenResponse = (TokenResponse) o;
+    return Objects.equals(this.token, tokenResponse.token);
   }
 
   @Override

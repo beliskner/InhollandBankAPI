@@ -83,7 +83,6 @@ public class HolderService {
         String fullPassword = password + salt;
         holder.setPassword(passwordEncoder.encode(fullPassword));
         List<Account> accounts = emptyList();
-        System.out.println(accounts);
         holder.setAccounts(accounts);
         holderRepository.save(holder);
 

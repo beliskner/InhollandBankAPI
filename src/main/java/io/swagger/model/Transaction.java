@@ -1,6 +1,8 @@
 package io.swagger.model;
 
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -194,6 +196,7 @@ public class Transaction extends BaseTransaction  {
     this.status = status;
   }
 
+  @JsonIgnore
   public Transaction TAN(Integer TAN) {
     this.TAN = TAN;
     return this;

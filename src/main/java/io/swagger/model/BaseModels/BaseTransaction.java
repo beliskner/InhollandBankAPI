@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import org.springframework.validation.annotation.Validated;
+
+import javax.persistence.MappedSuperclass;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
 
@@ -16,8 +18,7 @@ import javax.validation.constraints.*;
 @Schema(description = "Request body type of a Transaction")
 @Validated
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
-
-
+@MappedSuperclass
 public class BaseTransaction   {
   @JsonProperty("Amount")
   private BigDecimal amount = null;
