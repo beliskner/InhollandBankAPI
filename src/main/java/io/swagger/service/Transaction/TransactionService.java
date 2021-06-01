@@ -3,8 +3,11 @@ package io.swagger.service.Transaction;
 import io.swagger.model.Account;
 import io.swagger.model.BaseModels.BaseTransaction;
 import io.swagger.model.DTO.TransactionDTO.*;
+import io.swagger.model.DTO.TransactionDTO.Wrappers.TransactionWrapper;
+import io.swagger.model.Holder;
 import io.swagger.model.Transaction;
 import io.swagger.repository.AccountsRepo;
+import io.swagger.repository.HolderRepository;
 import io.swagger.repository.TransactionRepository;
 import io.swagger.service.accounts.AccountsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +19,7 @@ import org.threeten.bp.ZoneOffset;
 import org.threeten.bp.format.DateTimeFormatter;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -32,16 +36,10 @@ public class TransactionService {
     private AccountsService accountsService;
 
     @Autowired
+    private HolderRepository holderRepository;
+
+    @Autowired
     private AccountsRepo accountsRepo;
-
-    private List<Transaction> getTransactionsForIbanForToday(String iban) {
-        OffsetDateTime convertedStart = OffsetDateTime.of(LocalDate.now(), LocalTime.MIN, ZoneOffset.UTC);
-        OffsetDateTime convertedEnd = OffsetDateTime.of(LocalDate.now(), LocalTime.MAX, ZoneOffset.UTC);
-        List<Transaction> transactions = transactionRepository.findAllByDatetimeLessThanEqualAndDatetimeGreaterThanEqual(convertedEnd, convertedStart);
-
-        return transactions.stream().filter(p -> p.getFromAccount().equals(iban)).collect(Collectors.toList());
-    }
-
     private LocalDate convertStringToDate(String date) {
         return LocalDate.parse(date);
     }
@@ -67,7 +65,7 @@ public class TransactionService {
                 transactions = transactionRepository.findAllByDatetimeLessThanEqualAndDatetimeGreaterThanEqual(convertedEndDate, convertedStartDate);
             } else {
                 List<Transaction> allTransactionsByDate = transactionRepository.findAllByDatetimeLessThanEqualAndDatetimeGreaterThanEqual(convertedEndDate, convertedStartDate);
-                transactions = allTransactionsByDate.stream().filter(p -> p.getFromAccount().equals(iban)).collect(Collectors.toList());
+                transactions = allTransactionsByDate.stream().filter(p -> p.getFromAccount().equals(iban) || p.getToAccount().equals(iban)).collect(Collectors.toList());
             }
 
         }else {
@@ -88,20 +86,22 @@ public class TransactionService {
         return tanDTO;
     }
 
-    public Transaction createTransaction(RequestBodyTransaction body, Integer performedHolderId, Boolean isEmployee) {
+    public TransactionWrapper createTransaction(RequestBodyTransaction body, Holder holder, Boolean isEmployee, Account fromAccount) {
         Transaction transaction = modelMapper.map(body, Transaction.class);
-        Transaction appropriateTransaction = createAppropriateTransaction(transaction, performedHolderId, isEmployee);
-        if(!tanRequired(appropriateTransaction.getTransactionType()) || isEmployee) {
-            updateBalancesByTransaction(appropriateTransaction);
+        TransactionWrapper wrapper = createAppropriateTransaction(transaction, holder.getId(), isEmployee, fromAccount);
+        if(!tanRequired(wrapper.getTransaction().getTransactionType()) || isEmployee) {
+            updateBalancesByTransaction(wrapper.getTransaction());
         }
-        transactionRepository.save(appropriateTransaction);
+        if (wrapper.getSucces()) {
+            transactionRepository.save(wrapper.getTransaction());
+        }
 
-        return appropriateTransaction;
+        return wrapper;
     }
 
     public Transaction createDepositTransaction(RequestBodyDeposit body, Integer performedHolderId, Boolean isEmployee) {
         Transaction transaction = modelMapper.map(body, Transaction.class);
-        Transaction appropriateTransaction = createAppropriateTransaction(transaction, performedHolderId, isEmployee);
+        Transaction appropriateTransaction = createAppropriateTransaction(transaction, performedHolderId, isEmployee, new Account()).getTransaction();
         if(!tanRequired(appropriateTransaction.getTransactionType()) || isEmployee) {
             updateBalancesByTransaction(appropriateTransaction);
         }
@@ -110,21 +110,22 @@ public class TransactionService {
         return appropriateTransaction;
     }
 
-    public Transaction createWithdrawalTransaction(RequestBodyWithdrawal body, Integer performedHolderId, Boolean isEmployee) {
+    public TransactionWrapper createWithdrawalTransaction(RequestBodyWithdrawal body, Holder holder, Boolean isEmployee, Account fromAccount) {
         Transaction transaction = modelMapper.map(body, Transaction.class);
-        Transaction appropriateTransaction = createAppropriateTransaction(transaction, performedHolderId, isEmployee);
-        if(!tanRequired(appropriateTransaction.getTransactionType()) || isEmployee) {
-            updateBalancesByTransaction(appropriateTransaction);
+        TransactionWrapper wrapper = createAppropriateTransaction(transaction, holder.getId(), isEmployee, fromAccount);
+        if(!tanRequired(wrapper.getTransaction().getTransactionType()) || isEmployee) {
+            updateBalancesByTransaction(wrapper.getTransaction());
         }
-        transactionRepository.save(appropriateTransaction);
+        if (wrapper.getSucces()) {
+            transactionRepository.save(wrapper.getTransaction());
+        }
 
-        return appropriateTransaction;
+        return wrapper;
     }
 
-    private Transaction createAppropriateTransaction(Transaction transaction, Integer performedHolderId, Boolean isEmployee){
+    private TransactionWrapper createAppropriateTransaction(Transaction transaction, Integer performedHolderId, Boolean isEmployee, Account fromAccount){
         Transaction appropriateTransaction = new Transaction();
         appropriateTransaction.setDatetime(OffsetDateTime.now());
-        System.out.println(OffsetDateTime.now());
         appropriateTransaction.setTransactionType(transaction.getTransactionType());
         appropriateTransaction.setPerformedHolder(performedHolderId);
         if(transaction.getFromAccount() != null) {
@@ -138,15 +139,71 @@ public class TransactionService {
         } else {
             appropriateTransaction.setStatus(Transaction.StatusEnum.PENDING);
         }
-        if(transaction.getTransactionType() == BaseTransaction.TransactionTypeEnum.TRANSFER && !isEmployee) {
+        BaseTransaction.TransactionTypeEnum type = transaction.getTransactionType(); // Readability
+
+        if(type == BaseTransaction.TransactionTypeEnum.TRANSFER && !isEmployee) {
             appropriateTransaction.setTAN(createTAN());
         }
         appropriateTransaction.setAmount(transaction.getAmount());
-        return appropriateTransaction;
+        TransactionWrapper wrapper = new TransactionWrapper();
+        if(type == BaseTransaction.TransactionTypeEnum.TRANSFER || type == BaseTransaction.TransactionTypeEnum.WITHDRAWAL || type == BaseTransaction.TransactionTypeEnum.REFUND) {
+            wrapper = passesAllChecks(appropriateTransaction, fromAccount);
+        } else {
+            wrapper.setSucces(true);
+            wrapper.setTransaction(appropriateTransaction);
+        }
+        return wrapper;
     }
 
-    private Boolean passesAllChecks(Transaction transaction) {
-        return false;
+    private TransactionWrapper passesAllChecks(Transaction transaction, Account fromAccount) {
+        Boolean passesChecks = true;
+        TransactionWrapper wrapper = new TransactionWrapper();
+        if (DailyLimitExceeded(fromAccount, transaction.getAmount())) {
+            passesChecks = false;
+            wrapper.setMessage("Daily limit for transactions exceeded");
+        } else if (MaxTransferExceeded(transaction.getAmount(), fromAccount.getMaxTransfer())) {
+            passesChecks = false;
+            wrapper.setMessage("Transfer amount exceeds max transfer for this account");
+        } else if (MinBalanceExceeded(transaction.getAmount(), fromAccount)) {
+            passesChecks = false;
+            wrapper.setMessage("Transfer would put account balance below minimum required balance for this account");
+        }
+        wrapper.setTransaction(transaction);
+        wrapper.setSucces(passesChecks);
+        return wrapper;
+    }
+
+    private Boolean DailyLimitExceeded(Account fromAccount, BigDecimal toBeAdded) {
+        OffsetDateTime convertedStart = OffsetDateTime.of(LocalDate.now(), LocalTime.MIN, ZoneOffset.UTC);
+        OffsetDateTime convertedEnd = OffsetDateTime.of(LocalDate.now(), LocalTime.MAX, ZoneOffset.UTC);
+        List<Transaction> transactionsToday = transactionRepository.findAllByDatetimeLessThanEqualAndDatetimeGreaterThanEqual(convertedEnd, convertedStart).stream().filter(p -> p.getFromAccount().equals(fromAccount.getIban())).collect(Collectors.toList());
+        List<BigDecimal> transactionAmountList = new ArrayList<>();
+        transactionsToday.stream().forEach((tempTrans) -> transactionAmountList.add(tempTrans.getAmount()));
+        transactionAmountList.add(toBeAdded);
+        BigDecimal totalTransacted = transactionAmountList.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+        Optional<Holder> holder = holderRepository.findById(fromAccount.getHolderId());
+        if (holder.get().getDailyLimit().compareTo(totalTransacted) == -1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private Boolean MaxTransferExceeded(BigDecimal transferAmount, BigDecimal maxTransfer) {
+        if (maxTransfer.compareTo(transferAmount) == -1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private Boolean MinBalanceExceeded(BigDecimal transferAmount, Account account) {
+        BigDecimal balanceAfterTransfer = account.getBalance().subtract(transferAmount);
+        if (balanceAfterTransfer.compareTo(account.getMinBalance())  == -1) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private int createTAN() {
@@ -165,7 +222,6 @@ public class TransactionService {
                 account.setBalance(oldBalance);
                 accountsRepo.save(account);
                 return false;
-                //throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Account balance for account: " + toBeCheckAccount.get().getIban() + " could not be updated");
             }
             return true;
         }
@@ -178,7 +234,6 @@ public class TransactionService {
             Account account = optionalAccount.get();
             BigDecimal oldBalance = account.getBalance();
             BigDecimal newBalance = oldBalance.subtract(balanceUpdate);
-            // if (newBalance < account.getMinBalance())
             account.setBalance(newBalance);
             accountsRepo.save(account);
             Optional<Account> toBeCheckAccount = accountsService.getAccountByIban(account.getIban());
@@ -186,7 +241,6 @@ public class TransactionService {
                 account.setBalance(oldBalance);
                 accountsRepo.save(account);
                 return false;
-                //throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Account balance for account: " + toBeCheckAccount.get().getIban() + " could not be updated");
             }
             return true;
         }
@@ -216,7 +270,7 @@ public class TransactionService {
                 tanVerification.setMessage("TAN Correct. Transaction approved.");
 
                 updateBalancesByTransaction(transaction);
-
+                transaction.setDatetime(OffsetDateTime.now());
                 transaction.setStatus(Transaction.StatusEnum.APPROVED);
                 transactionRepository.save(transaction);
             } else {

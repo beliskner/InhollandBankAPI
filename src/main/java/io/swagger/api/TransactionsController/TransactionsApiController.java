@@ -7,6 +7,8 @@ import io.swagger.model.BaseModels.BaseAccount;
 import io.swagger.model.BaseModels.BaseTransaction;
 import io.swagger.model.DTO.TransactionDTO.*;
 import io.swagger.model.Body;
+import io.swagger.model.DTO.TransactionDTO.Wrappers.TransactionWrapper;
+import io.swagger.model.Holder;
 import io.swagger.model.Transaction;
 import io.swagger.security.AuthCheck;
 import io.swagger.service.Holders.HolderService;
@@ -91,12 +93,15 @@ public class TransactionsApiController implements TransactionsApi {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can not transfer negative amounts of money.");
             }
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            int performedHolderId = holderService.getHolderByEmail(authentication.getName()).getId();
-            if (authCheck.isOwnerOfAccountOrEmployee(SecurityContextHolder.getContext().getAuthentication(), fromAccount.get())) {
-                Transaction transaction = transactionService.createTransaction(body, performedHolderId, authCheck.hasRole("EMPLOYEE"));
-                if(transaction != null) {
-                    ReturnBodyTransaction returnBodyTransaction = modelMapper.map(transaction, ReturnBodyTransaction.class);
-                    return new ResponseEntity(returnBodyTransaction, HttpStatus.CREATED);
+            Holder holder = holderService.getHolderByEmail(authentication.getName());
+            if (authCheck.isOwnerOfAccountOrEmployee(authentication, fromAccount.get())) {
+                TransactionWrapper wrapper = transactionService.createTransaction(body, holder, authCheck.hasRole("EMPLOYEE"), fromAccount.get());
+                if(wrapper.getTransaction() != null) {
+                    if(wrapper.getSucces()) {
+                        return new ResponseEntity(modelMapper.map(wrapper.getTransaction(), ReturnBodyTransaction.class), HttpStatus.CREATED);
+                    } else {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, wrapper.getMessage());
+                    }
                 } else {
                     throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Unable to create transaction with given request");
                 }
@@ -150,11 +155,15 @@ public class TransactionsApiController implements TransactionsApi {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can not transfer negative amounts of money.");
             }
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            int performedHolderId = holderService.getHolderByEmail(authentication.getName()).getId();
+            Holder holder = holderService.getHolderByEmail(authentication.getName());
             if (authCheck.isOwnerOfAccountOrEmployee(SecurityContextHolder.getContext().getAuthentication(), fromAccount.get())) {
-                Transaction transaction = transactionService.createWithdrawalTransaction(body, performedHolderId, authCheck.hasRole("EMPLOYEE"));
-                if(transaction != null) {
-                    return new ResponseEntity(modelMapper.map(transaction, ReturnBodyWithdrawal.class), HttpStatus.CREATED);
+                TransactionWrapper wrapper = transactionService.createWithdrawalTransaction(body, holder, authCheck.hasRole("EMPLOYEE"), fromAccount.get());
+                if(wrapper.getTransaction() != null) {
+                    if (wrapper.getSucces()) {
+                        return new ResponseEntity(modelMapper.map(wrapper.getTransaction(), ReturnBodyWithdrawal.class), HttpStatus.CREATED);
+                    } else {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, wrapper.getMessage());
+                    }
                 } else {
                     throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Unable to create transaction with given request");
                 }
