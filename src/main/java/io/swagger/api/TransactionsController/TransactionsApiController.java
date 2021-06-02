@@ -83,8 +83,8 @@ public class TransactionsApiController implements TransactionsApi {
             } else if((toAccount.get().getAccountType() == BaseAccount.AccountTypeEnum.SAVINGS || fromAccount.get().getAccountType() == BaseAccount.AccountTypeEnum.SAVINGS)
                     && toAccount.get().getHolderId() != fromAccount.get().getHolderId()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Accounts " + body.getFromAccount() + " and " + body.getToAccount() + " are not owned by the same Holder.");
-            } else if(body.getAmount().compareTo(BigDecimal.ZERO) < 0) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can not transfer negative amounts of money.");
+            } else if(body.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can not transfer no money or negative amounts of money.");
             }
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             Holder holder = holderService.getHolderByEmail(authentication.getName());
@@ -116,8 +116,8 @@ public class TransactionsApiController implements TransactionsApi {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Specified transaction type: '"+ body.getTransactionType().toString() + "' incorrect. must be Deposit");
             } else if(toAccount.get().getAccountType() == BaseAccount.AccountTypeEnum.SAVINGS) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot directly deposit money to a savings account, operation must be done through a current account");
-            } else if(body.getAmount().compareTo(BigDecimal.ZERO) < 0) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can not transfer negative amounts of money.");
+            } else if(body.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can not transfer no money or negative amounts of money.");
             }
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             int performedHolderId = holderService.getHolderByEmail(authentication.getName()).getId();
@@ -145,8 +145,8 @@ public class TransactionsApiController implements TransactionsApi {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Specified transaction type: '"+ body.getTransactionType().toString() + "' incorrect, must be Withdrawal");
             } else if(fromAccount.get().getAccountType() == BaseAccount.AccountTypeEnum.SAVINGS) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot directly withdraw money from a savings account, operation must be done through a current account");
-            } else if(body.getAmount().compareTo(BigDecimal.ZERO) < 0) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can not transfer negative amounts of money.");
+            } else if(body.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can not transfer no money or negative amounts of money.");
             }
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             Holder holder = holderService.getHolderByEmail(authentication.getName());
