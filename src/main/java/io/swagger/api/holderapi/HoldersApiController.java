@@ -1,9 +1,7 @@
-package io.swagger.api.HoldersController;
+package io.swagger.api.holderapi;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.Api;
-import io.swagger.api.NotFoundException;
-import io.swagger.helpers.MapListsHelper;
 import io.swagger.model.Account;
 import io.swagger.model.DTO.AccountDTO.ArrayOfAccounts;
 import io.swagger.model.DTO.HolderDTO.ArrayOfHolders;
@@ -30,24 +28,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.security.auth.login.AccountException;
 import javax.validation.constraints.*;
 import javax.validation.Valid;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.io.InvalidObjectException;
-import java.lang.reflect.Array;
-import java.util.Collections;
 import java.util.List;
-
-import static io.swagger.helpers.MapListsHelper.modelMapper;
 
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
 @RestController
@@ -80,7 +71,7 @@ public class HoldersApiController implements HoldersApi {
         if (accept != null && accept.contains("application/json")) {
             try {
                 Holder holder = holderService.add(body);
-                return new ResponseEntity(holder, HttpStatus.OK);
+                return new ResponseEntity(holder, HttpStatus.CREATED);
             } catch (Exception e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
