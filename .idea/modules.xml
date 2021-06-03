@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/cleanpull.iml" filepath="$PROJECT_DIR$/.idea/cleanpull.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/InhollandBankAPI.iml" filepath="$PROJECT_DIR$/.idea/InhollandBankAPI.iml" />
     </modules>
   </component>
 </project>
