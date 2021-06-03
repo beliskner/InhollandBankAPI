@@ -32,16 +32,16 @@ public class AuthCheck {
             return false;
         }
     }
-    public Boolean isOwnerOfAccountOrEmployee(Authentication authentication, ArrayOfAccounts account) {
-        String email = authentication.getName();
-        Holder holder = holderService.getHolderByEmail(email);
-
-        if(holder.getId() == account.getHolderId() || holder.getRole() == Role.ROLE_EMPLOYEE) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+//    public Boolean isOwnerOfAccountOrEmployee(Authentication authentication, ArrayOfAccounts account) {
+//        String email = authentication.getName();
+//        Holder holder = holderService.getHolderByEmail(email);
+//
+//        if(holder.getId() == account.getHolderId() || holder.getRole() == Role.ROLE_EMPLOYEE) {
+//            return true;
+//        } else {
+//            return false;
+//        }
+//    }
     public Boolean isHolderMakingRequestOrEmployee(Authentication authentication, Holder holder) {
         String email = authentication.getName();
         Holder authenticatedHolder = holderService.getHolderByEmail(email);
