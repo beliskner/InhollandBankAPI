@@ -175,9 +175,11 @@ public class AccountsApiController implements AccountsApi {
         if (accept != null && accept.contains("application/json")) {
             try {
                 Account account = accountsService.deleteAccount(iban);
-                BodyAccountStatus bodyAccount = mapper.map(account,BodyAccountStatus.class);
+                if(authCheck.isOwnerOfAccountOrEmployee(SecurityContextHolder.getContext().getAuthentication(),account) ) {
+                    BodyAccountStatus bodyAccount = mapper.map(account, BodyAccountStatus.class);
 
-                return new ResponseEntity<BodyAccountStatus>(bodyAccount, HttpStatus.OK);
+                    return new ResponseEntity<BodyAccountStatus>(bodyAccount, HttpStatus.OK);
+                }
             } catch (Exception e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<BodyAccountStatus>(HttpStatus.INTERNAL_SERVER_ERROR);

@@ -1,6 +1,7 @@
 package io.swagger.security;
 
 import io.swagger.model.Account;
+import io.swagger.model.DTO.AccountDTO.ArrayOfAccounts;
 import io.swagger.model.Enums.Role;
 import io.swagger.model.Holder;
 import io.swagger.service.Holders.HolderService;
@@ -31,7 +32,16 @@ public class AuthCheck {
             return false;
         }
     }
+    public Boolean isOwnerOfAccountOrEmployee(Authentication authentication, ArrayOfAccounts account) {
+        String email = authentication.getName();
+        Holder holder = holderService.getHolderByEmail(email);
 
+        if(holder.getId() == account.getHolderId() || holder.getRole() == Role.ROLE_EMPLOYEE) {
+            return true;
+        } else {
+            return false;
+        }
+    }
     public Boolean isHolderMakingRequestOrEmployee(Authentication authentication, Holder holder) {
         String email = authentication.getName();
         Holder authenticatedHolder = holderService.getHolderByEmail(email);
