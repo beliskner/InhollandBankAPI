@@ -2,19 +2,19 @@ Feature: account test
 
   Scenario: Create a account
     When Create a acount
-    Then The request status code is 201
+    Then The a new account will be created
 
   Scenario: Get all acounts
-    When Get all account
-    Then The request status code is 202
+    When ik all accounts ophaal
+    Then krijg ik een lijst van accounts
 
   Scenario: Delete a account
-    When Delete a acount
-    Then The request status code is 202
+    When ik een acount delete
+    Then word de status closed
 
   Scenario: update a account status
     When Update a acount status
-    Then The request status code is 202
+    Then
 
   Scenario: Update a minBalance
     When Update a minBalance
