@@ -42,7 +42,5 @@ public class HolderSteps {
     }
 
 
-    @When("Delete a acount")
-    public void deleteAAcount() {
-    }
+
 }
