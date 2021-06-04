@@ -1,5 +1,6 @@
 package io.swagger.api.accountApi.IT.steps;
 
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.junit.Assert;
@@ -11,16 +12,13 @@ import java.net.URISyntaxException;
 
 public class AccountSteps {
     private HttpHeaders headers = new HttpHeaders();
-    private String baseUrl = "http://localhost:8080/api/account/";
+    private String baseUrl = "http://localhost:8080/api/accounts/";
     private RestTemplate template = new RestTemplate();
     private ResponseEntity<String> responseEntity;
-    private String authToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiYW5rQGluaG9sbGFuZC5ubCIsImF1dGgiOiJST0xFX0VNUExPWUVFIiwiaWF0IjoxNjIyNzU3OTMyLCJleHAiOjE2MjI3NjE1MzJ9.4rFRHJS3iYfHkObYpZZytQAqrjqy5n1ShGI9LwJzRHw";
+    private String authToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiYW5rQGluaG9sbGFuZC5ubCIsImF1dGgiOiJST0xFX0VNUExPWUVFIiwiaWF0IjoxNjIyODM2NDMwLCJleHAiOjE2MjI4NDAwMzB9.zuNQCL1dbBErvalOL1_I2NWUj7E44qDnsRO-Au3NSHo";
 
 
 
-    @When("Delete a acount")
-    public void deleteAAcount() {
-    }
 
     @When("Create a acount")
     public void createAAcount()throws URISyntaxException  {
@@ -28,12 +26,12 @@ public class AccountSteps {
         headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         headers.setBearerAuth(authToken);
         String body = "{\n" +
-                "  \"accountType\": CURRENT,\n" +
-                "  \"maxTransfer\": \"500\",\n" +
-                "  \"minBalance\": \"-500\",\n" +
-                "  \"status\": \"OPEN\",\n" +
-                "  \"holderId\": \"1\",\n" +
-                "  \"iban\": \"nl00INHL0000000001\"\n" +
+                "  \"accountType\": \"Current\",\n" +
+                "  \"holderId\": 1,\n" +
+                "  \"iban\": \"string\",\n" +
+                "  \"maxTransfer\": 500,\n" +
+                "  \"minBalance\": -500.25,\n" +
+                "  \"status\": \"Open\"\n" +
                 "}";
         URI uri = new URI(baseUrl);
         HttpEntity<String> entity = new HttpEntity<>(body, headers);
@@ -41,55 +39,66 @@ public class AccountSteps {
 
     }
 
-    @Then("The a new account will be created")
-    public void theANewAccountWillBeCreated() {
-    }
 
-    @When("ik all accounts ophaal")
-    public void ikAllAccountsOphaal() throws URISyntaxException {
+
+
+    @When("ik een account status veranderd naar {string}")
+    public void ikEenAccountStatusVeranderdNaar(String given) throws URISyntaxException{
         headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
         headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         headers.setBearerAuth(authToken);
         URI uri = new URI(baseUrl);
         HttpEntity<String> entity = new HttpEntity<>(null, headers);
-        responseEntity = template.getForEntity(uri, String.class);
-
+        responseEntity = template.postForEntity(uri, entity, String.class);
     }
 
-    @Then("krijg ik een lijst van accounts")
-    public void krijgIkEenLijstVanAccounts() {
-    }
 
-    @When("ik een acount delete")
-    public void ikEenAcountDelete() {
-    }
 
-    @Then("word de status closed")
-    public void wordDeStatusClosed() {
-    }
 
-    @When("Update a acount status")
-    public void updateAAcountStatus() {
+
+//for http responses
+    @Then("is de status van de request {int}")
+    public void isDeStatusVanDeRequest(int expected) {
+            int response = responseEntity.getStatusCodeValue();
+        Assert.assertEquals(expected, response);
+
     }
 
     @When("Update a minBalance")
     public void updateAMinBalance() {
     }
-    
 
-    @When("Update a maxTransfer")
-    public void updateAMaxTransfer() {
-    }
+//    @Then("is de status van de request {int}")
+//    public void isDeStatusVanDeRequest(int expected) {
+//        int response = responseEntity.getStatusCodeValue();
+//        Assert.assertEquals(expected, response);
+//    }
 
 
-    @Then("The requested status code is {int}")
-    public void theRequestedStatusCodeIs(int arg0) {
-        
-    }
+//    @When("ik all accounts ophaal")
+//    public void ikAllAccountsOphaal() throws URISyntaxException {
+//        headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+//        headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+//        headers.setBearerAuth(authToken);
+//        URI uri = new URI(baseUrl);
+//        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+//        responseEntity = template.getForEntity(uri, String.class);
+//
+//    }
+//
+//    @When("ik een account status verander naar {string}")
+//    public void ikEenAccountStatusVeranderNaar(String status) throws  JSONException{
+//        String response = responseEntity.getBody();
+//        JSONObject jsonObject = new JSONObject(response);
+//        System.out.println(jsonObject.toString());
+//        Assert.assertEquals(status, jsonObject.getString("status"));
+//
+//    }
+//
+//    @Then("is de status van de request {int}")
+//    public void isDeStatusVanDeRequest(int status) throws  JSONException{
+//
+//    }
 
-    @Then("The requested changed status code is {int}")
-    public void theRequestedChangedStatusCodeIs(int expected) {
-        int response = responseEntity.getStatusCodeValue();
-        Assert.assertEquals(expected, response);
-    }
+
 }

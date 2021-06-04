@@ -2,22 +2,22 @@ Feature: account test
 
   Scenario: Create a account
     When Create a acount
-    Then The a new account will be created
+    Then is de status van de request 201
 
-  Scenario: Get all acounts
-    When ik all accounts ophaal
-    Then krijg ik een list van <accounts>
+#  Scenario: Get all acounts
+#    When ik all accounts ophaal
+#    Then krijg ik een list van accounts
 
   Scenario: Delete a account
-    When ik een acount delete
-    Then word de status closed
+    When ik een account status veranderd naar "CLOSED"
+    Then The request status code is 200
 
 
   Scenario: Update a minBalance
     When Update a minBalance
-    Then The requested status code is 200
+    Then is de status van de request 200
 
-  Scenario: Update a maxTransfer
-    When Update a maxTransfer
-    Then The requested changed status code is 202
+#  Scenario: Update a maxTransfer
+#    When Update a maxTransfer
+#    Then is de status van de request 200
 
