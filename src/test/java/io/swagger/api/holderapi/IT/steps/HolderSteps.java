@@ -42,5 +42,7 @@ public class HolderSteps {
     }
 
 
-
+    @When("Update a minBalance van account {string} en minbalance {int}")
+    public void updateAMinBalanceVanAccountEnMinbalance(String arg0, int arg1) {
+    }
 }
