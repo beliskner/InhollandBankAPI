@@ -1,17 +1,27 @@
 package io.swagger.api.transactionApi.IT.steps;
 
 
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import org.h2.util.json.JSONArray;
-import org.h2.util.json.JSONObject;
+import io.cucumber.messages.internal.com.google.gson.Gson;
+import io.swagger.configuration.ObjectMapper;
+import io.swagger.model.DTO.HolderDTO.ArrayOfHolders;
+import io.swagger.model.DTO.HolderDTO.BodyDailyLimit;
+import io.swagger.model.DTO.TransactionDTO.ArrayOfTransactions;
+import io.swagger.model.Enums.Role;
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.springframework.http.*;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
 
 public class transactionSteps {
     private HttpHeaders headers = new HttpHeaders();
@@ -124,14 +134,12 @@ public class transactionSteps {
 
     @Then("The response is an {string} object")
     public void theResponseIsAnObject(String transfers)  throws JSONException {
-        String response = responseEntity.getBody();
-        JSONArray jsonArray = new JSONArray(response);
-        for (int i=0; i < jsonArray.length(); i++) {
-            JSONObject holder = jsonArray.getJSONObject(i);
-            String actualName = holder.get("firstName").toString().toLowerCase();
-            Assert.assertTrue(actualName.contains(transfers.toLowerCase()));
-        }
+        ArrayOfTransactions arrayOfTransactions = new Gson().fromJson(responseEntity.getBody(), ArrayOfTransactions.class);
+        Assert.assertFalse(arrayOfTransactions.isEmpty());
+        Assert.assertEquals(transfers, arrayOfTransactions.getClass().getSimpleName());
+
     }
+
     //for http responses
     @Then("is the status of the request {int}")
     public void isTheStatusOfTheRequest(int expected) {
