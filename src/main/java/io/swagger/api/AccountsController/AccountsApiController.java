@@ -97,7 +97,7 @@ public class AccountsApiController implements AccountsApi {
             return new ResponseEntity<ReturnBodyAccount>(HttpStatus.NOT_IMPLEMENTED);
         try {
             Optional<Account> optionalAccount = accountsService.getAccountByIban(iban);
-            if (optionalAccount.isEmpty()) return new ResponseEntity(HttpStatus.NOT_FOUND);
+            if (!optionalAccount.isPresent()) return new ResponseEntity(HttpStatus.NOT_FOUND);
 
             if (authCheck.isOwnerOfAccountOrEmployee(SecurityContextHolder.getContext().getAuthentication(), optionalAccount.get())) {
                 return new ResponseEntity<ReturnBodyAccount>(mapper.map(optionalAccount.get(), ReturnBodyAccount.class), HttpStatus.OK);

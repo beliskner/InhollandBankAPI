@@ -7,7 +7,7 @@ Feature: account test
 
   Scenario: Get all acounts
     When i get all accounts
-    Then is the status of the request 201
+    Then is the status of the request 200
 
   Scenario: Get all holders gives an ArrayOfHolders object
     When Get all holders
@@ -20,16 +20,16 @@ Feature: account test
 
   Scenario: Delete a account
     When i do a status change to closed on account with iban "NL00INHO0000000002"
-    Then is the status of the request 201
+    Then is the status of the request 200
 
 
   Scenario: Update a minBalance
     When Update a minBalance van accounts "NL00INHO0000000002"
-    Then is the status of the request 201
+    Then is the status of the request 200
 
   Scenario: Update a maxTransfer
     When Update a maxTransfer of account with iban "NL00INHO0000000002"
-    Then is the status of the request 201
+    Then is the status of the request 200
 
 
 
