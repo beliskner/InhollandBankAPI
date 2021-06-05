@@ -27,24 +27,27 @@ Feature: Holder test
     When Create a holder
     Then The request status code is 201
 
+  @allow-rescue
   Scenario: Make sure holder can't be created if email already exists
     When Failing to create a holder with email "bank@inholland.nl"
-    Then The request status code is 422
+    Then The bad request status code is 422
 
   Scenario: Get holder by id
     When Getting a holder with id 1
     Then The request status code is 200
     And The holder email is "bank@inholland.nl"
 
-  Scenario: Update holder by id
-    When Update holder with id 1 to first name
+  Scenario: Update first name of a holder
+    When Update holder with id 1 to first name "Bert"
     Then The request status code is 200
+    And The holder first name is "Bert"
 
-  Scenario: Delete holder by id
-    When Delete holder by "id"
+  Scenario: Deleting a holder by id sets the holder status to frozen
+    When Delete holder with id 2
     Then The request status code is 200
+    And The holder status is "Frozen"
 
-  Scenario: Get accounts by holder id
+  Scenario: Get accounts from a specific holder
     When Get accounts by holder id
     Then The request status code is 200
 

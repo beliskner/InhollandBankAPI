@@ -123,8 +123,16 @@ public class HolderService {
         holderRepository.save(holder4);
     }
 
+    public Boolean checkIfEmailIsNew(String email) {
+        Holder holder = holderRepository.findByEmail(email);
+        if(holder == null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public Holder add(@Valid @RequestBody RequestBodyHolder body) {
-        if(holderRepository.findByEmail(body.getEmail()) == null) {
             // create random salt
             Random r = new SecureRandom();
             byte[] salt = new byte[20];
@@ -153,9 +161,6 @@ public class HolderService {
             List<Account> accounts = emptyList();
             holder.setAccounts(accounts);
             return holderRepository.save(holder);
-        } else {
-            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Email already in use");
-        }
     }
 
     public Holder getHolderById(int id) {

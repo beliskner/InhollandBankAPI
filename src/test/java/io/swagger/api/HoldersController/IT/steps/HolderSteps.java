@@ -23,8 +23,11 @@ import java.util.Map;
 
 public class HolderSteps {
 
-    private String authTokenEmployee = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiYW5rQGluaG9sbGFuZC5ubCIsImF1dGgiOiJST0xFX0VNUExPWUVFIiwiaWF0IjoxNjIyODQ4MDA4LCJleHAiOjE2MjI4NTE2MDh9.3r3V99f5Pq0XBCH1ar2mRjeQHFSz7EEd24pvC2UfMc4";
-    private String authTokenCustomer = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwZXRlckBhcHBlbC5jb20iLCJhdXRoIjoiUk9MRV9DVVNUT01FUiIsImlhdCI6MTYyMjg0Nzk4MSwiZXhwIjoxNjIyODUxNTgxfQ.at7p6Am442oGPXvUZ6C-mGdU98bzpdPHI6gmg2BDERc";
+    // "email": "bank@inholland.nl",
+    // "email": "peter@appel.com",
+
+    private String authTokenEmployee = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiYW5rQGluaG9sbGFuZC5ubCIsImF1dGgiOiJST0xFX0VNUExPWUVFIiwiaWF0IjoxNjIyOTI3MDE0LCJleHAiOjE2MjI5MzA2MTR9.mNvUyOUkNuvUztOGf9pc8s8O4H2_YXMllvXEGK2zGlY";
+    private String authTokenCustomer = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwZXRlckBhcHBlbC5jb20iLCJhdXRoIjoiUk9MRV9DVVNUT01FUiIsImlhdCI6MTYyMjkxMDkwMSwiZXhwIjoxNjIyOTE0NTAxfQ.LzZLRcVxbZI4zC5W-rTUOACWrsZNOasPySzFU-kb-dA";
     private HttpHeaders emptyHeaders = new HttpHeaders();
     private String baseUrl = "http://localhost:8080/api/holders/";
     private RestTemplate template = new RestTemplate();
@@ -152,6 +155,7 @@ public class HolderSteps {
         } catch(HttpStatusCodeException e) {
             // Error 422 expected, set field for the then test
             errorCode = e.getStatusCode().value();
+            System.out.println(e.getStatusCode().value());
         }
 
     }
@@ -172,6 +176,45 @@ public class HolderSteps {
         Assert.assertEquals(email, holder.get("email"));
     }
 
+    // ---------- Tests for update holder by id ----------
+    @When("Update holder with id {int} to first name {string}")
+    public void updateHolderWithIdToFirstName(int id, String firstName) throws URISyntaxException {
+        HttpHeaders headers = setHeaders(emptyHeaders, true);
+        URI uri = new URI(baseUrl + id);
+        String body = "{\n" +
+                "  \"dailyLimit\": 250,\n" +
+                "  \"email\": \"bank@inholland.nl\",\n" +
+                "  \"firstName\": \"" + firstName + "\",\n" +
+                "  \"lastName\": \"Bank\",\n" +
+                "  \"role\": \"Employee\"\n" +
+                "}";
+        HttpEntity<String> entity = new HttpEntity<>(body, headers);
+        responseEntity = template.exchange(uri, HttpMethod.PUT, entity, String.class);
+    }
+
+    @And("The holder first name is {string}")
+    public void theHolderFirstNameIs(String firstName) throws JSONException {
+        String response = responseEntity.getBody();
+        JSONObject holder = new JSONObject(response);
+        Assert.assertEquals(firstName, holder.get("firstName"));
+    }
+
+    // ---------- Tests for soft deleting a holder by id ----------
+    @When("Delete holder with id {int}")
+    public void deleteHolderWithId(int id) throws URISyntaxException {
+        HttpHeaders headers = setHeaders(emptyHeaders, true);
+        URI uri = new URI(baseUrl + id);
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+        responseEntity = template.exchange(uri, HttpMethod.DELETE, entity, String.class);
+    }
+
+    @And("The holder status is {string}")
+    public void theHolderStatusIs(String status) throws JSONException {
+        String response = responseEntity.getBody();
+        JSONObject holder = new JSONObject(response);
+        Assert.assertEquals(status, holder.get("status"));
+    }
+
     // ---------- Tests for expected status response ----------
     @Then("The request status code is {int}")
     public void theRequestStatusCodeIs(int expected) {
@@ -183,6 +226,9 @@ public class HolderSteps {
 
     @Then("The bad request status code is {int}")
     public void theBadRequestStatusCodeIs(int expected) {
+        System.out.println("badreq status code is");
+        System.out.println(expected);
+        System.out.println(errorCode);
         Assert.assertEquals(expected, errorCode);
         // reset error code for other bad request tests
         errorCode = 0;

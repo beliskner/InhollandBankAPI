@@ -1,6 +1,7 @@
 package io.swagger.api.HoldersController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.sun.istack.Nullable;
 import io.swagger.annotations.Api;
 import io.swagger.model.Account;
 import io.swagger.model.DTO.AccountDTO.ArrayOfAccounts;
@@ -14,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.model.Enums.IncludeFrozen;
 import io.swagger.model.Enums.Role;
 import io.swagger.model.Holder;
+import io.swagger.repository.HolderRepository;
 import io.swagger.security.AuthCheck;
 import io.swagger.service.Holders.HolderService;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -39,6 +41,7 @@ import javax.validation.Valid;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-05-13T15:50:27.304Z[GMT]")
 @RestController
@@ -58,6 +61,7 @@ public class HoldersApiController implements HoldersApi {
 
     @Autowired
     private HolderService holderService;
+    private HolderRepository holderRepository;
 
     @org.springframework.beans.factory.annotation.Autowired
     public HoldersApiController(ObjectMapper objectMapper, HttpServletRequest request) {
@@ -69,14 +73,18 @@ public class HoldersApiController implements HoldersApi {
     public ResponseEntity<ReturnBodyHolder> createHolder(@Parameter(in = ParameterIn.DEFAULT, description = "Request body to create a new holder", required=true, schema=@Schema()) @Valid @RequestBody RequestBodyHolder body) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
-            // TODO: add a class for validations somewhere. Then check if email exists -> create / throw 422
-//            if(holderRepository.findByEmail(body.getEmail()) == null) {
-            try {
-                Holder holder = holderService.add(body);
-                return new ResponseEntity(holder, HttpStatus.CREATED);
-            } catch (Exception e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+            if(holderService.checkIfEmailIsNew(body.getEmail())) {
+                // Email not found, create holder
+                try {
+                    Holder holder = holderService.add(body);
+                    return new ResponseEntity(holder, HttpStatus.CREATED);
+                } catch (Exception e) {
+                    log.error("Couldn't serialize response for content type application/json", e);
+                    return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            } else {
+                // Email already in use, throw error
+                throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Email already in use");
             }
         }
         return new ResponseEntity<ReturnBodyHolder>(HttpStatus.INTERNAL_SERVER_ERROR);
