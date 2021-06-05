@@ -53,6 +53,7 @@ public class Swagger2SpringBoot implements CommandLineRunner {
     @EventListener(ApplicationReadyEvent.class)
     public void doSomethingAfterStartup() {
         holderService.addInitialHolders();
+        accountsService.addAccountForBank();
 //        accountsService.addAccountForBank();
 //        accountsService.addAccountForCustomer();
     }

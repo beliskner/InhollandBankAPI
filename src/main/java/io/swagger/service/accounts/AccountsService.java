@@ -127,6 +127,26 @@ public class AccountsService {
         accountsRepo.save(account);
     }
 
+    public void addTestAccounts(){
+        Account account = new Account();
+        account.setAccountType(AccountTypeEnum.CURRENT);
+        account.setMaxTransfer(new BigDecimal("5000.00"));
+        account.setMinBalance(new BigDecimal("-5000.00"));
+        account.setStatus(StatusEnum.OPEN);
+        account.setBalance(new BigDecimal("1000000.25"));
+        account.setHolderId(1);
+        accountsRepo.save(account);
+
+        Account account2 = new Account();
+        account.setAccountType(AccountTypeEnum.CURRENT);
+        account.setMaxTransfer(new BigDecimal("5000.00"));
+        account.setMinBalance(new BigDecimal("-5000.00"));
+        account.setStatus(StatusEnum.OPEN);
+        account.setBalance(new BigDecimal("1000000.25"));
+        account.setHolderId(1);
+        accountsRepo.save(account);
+    }
+
     public void addAccountForCustomer() {
         Account account = new Account();
         account.setAccountType(AccountTypeEnum.CURRENT);

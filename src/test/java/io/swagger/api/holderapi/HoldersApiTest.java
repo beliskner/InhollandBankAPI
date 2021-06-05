@@ -1,7 +1,9 @@
 package io.swagger.api.holderapi;
 
+import io.swagger.api.accountApi.IT.steps.AccountSteps;
 import io.swagger.model.Holder;
 import io.swagger.service.Holders.HolderService;
+import io.swagger.service.accounts.AccountsService;
 import org.junit.Before;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -36,13 +39,20 @@ class HoldersApiTest {
     private MockMvc mvc;
 
     @MockBean
+    private AccountsService accountsService;
+
+    @MockBean
     private HolderService holderService;
 
     @BeforeAll
     public void startTest() {
         System.out.println("Start testing HoldersApiController");
 
+
         holderService.addInitialHolders();
+        accountsService.addAccountForBank();
+
+
     }
 
     @Before()
@@ -54,13 +64,13 @@ class HoldersApiTest {
 
 
     @Test
+    @WithMockUser(roles = "EMPLOYEE")
     public void getAllHoldersTest() throws Exception {
         // TODO: MockMvc gebruikt niet de DB. Dus users gemaakt in de applicatie bestaan niet. er moet een mockUser gemaakt worden om auth te fixen
         // TODO: ik weet ook niet hoe token dan meegegeven wordt met mockUser/mockAuth
         String token = "placeholder";
-        this.mvc.perform(MockMvcRequestBuilders.get("http://localhost:8080/api/holders")
-                .accept("application/json")
-                .header("Authorization", "Bearer " + token))
+        this.mvc.perform(MockMvcRequestBuilders.get("/api/holders")
+                .accept("application/json"))
                 .andExpect(status().isOk());
     }
 

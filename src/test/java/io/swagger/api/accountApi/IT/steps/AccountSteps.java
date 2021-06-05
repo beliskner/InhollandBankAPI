@@ -11,6 +11,7 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+
 public class AccountSteps {
     private HttpHeaders headers = new HttpHeaders();
     private String baseUrl = "http://localhost:8080/api/accounts";
@@ -22,7 +23,7 @@ public class AccountSteps {
 
 
     @When("Create a acount")
-    public void createAAcount()throws URISyntaxException  {
+    public void createAAcount()throws URISyntaxException {
         headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
         headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         headers.setBearerAuth(authToken);

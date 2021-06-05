@@ -132,7 +132,7 @@ public class AccountsApiController implements AccountsApi {
             return new ResponseEntity(accounts, HttpStatus.OK);
         }
 
-        return new ResponseEntity<ArrayOfAccounts>(HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<ArrayOfAccounts>(HttpStatus.BAD_REQUEST);
     }
 
     @PreAuthorize("hasRole('EMPLOYEE')or hasRole('CUSTOMER')")
