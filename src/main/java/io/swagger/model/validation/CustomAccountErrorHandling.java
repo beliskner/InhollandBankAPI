@@ -20,8 +20,6 @@ public class CustomAccountErrorHandling extends ResponseEntityExceptionHandler {
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
-
-
             List<String> errors = new ArrayList<String>();
             for (FieldError error : ex.getBindingResult().getFieldErrors()) {
                 errors.add(error.getField() + ": " + error.getDefaultMessage());
@@ -31,24 +29,6 @@ public class CustomAccountErrorHandling extends ResponseEntityExceptionHandler {
             }
 
             ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, "some of your arguments are invalid", errors);
-
-            return handleExceptionInternal(
-                    ex, apiError, headers, apiError.getStatus(), request);
-
-
-
+            return handleExceptionInternal(ex, apiError, headers, apiError.getStatus(), request);
     }
-
-/*    @ExceptionHandler(MethodArgumentNotValidException.class)
-    ResponseEntity handleMethodArgumentNotValidExcieption(MethodArgumentNotValidException ex){
-
-        ex.getMessage();
-
-
-
-        return new ResponseEntity("ffs" , HttpStatus.BAD_REQUEST );
-    }*/
-
-
-
 }
