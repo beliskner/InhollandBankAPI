@@ -78,7 +78,7 @@ public class TransactionsApiController implements TransactionsApi {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No account with IBAN " + body.getToAccount() + " found.");
             } else if (body.getFromAccount() != null && !fromAccount.isPresent()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No account with IBAN " + body.getFromAccount() + " found.");
-            } else if(body.getTransactionType() != BaseTransaction.TransactionTypeEnum.TRANSFER && body.getTransactionType() != BaseTransaction.TransactionTypeEnum.REFUND) {
+            } else if(body.getTransactionType().toString() != BaseTransaction.TransactionTypeEnum.TRANSFER.toString() && body.getTransactionType().toString() != BaseTransaction.TransactionTypeEnum.REFUND.toString()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Specified transaction type: '"+ body.getTransactionType().toString() + "' incorrect, must be Transfer or Refund");
             } else if((toAccount.get().getAccountType() == BaseAccount.AccountTypeEnum.SAVINGS || fromAccount.get().getAccountType() == BaseAccount.AccountTypeEnum.SAVINGS)
                     && toAccount.get().getHolderId() != fromAccount.get().getHolderId()) {
@@ -112,7 +112,7 @@ public class TransactionsApiController implements TransactionsApi {
             Optional<Account> toAccount = accountsService.getAccountByIban(body.getToAccount());
             if(body.getToAccount() != null && !toAccount.isPresent()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No account with IBAN " + body.getToAccount() + " found.");
-            } else if(body.getTransactionType() != BaseTransaction.TransactionTypeEnum.DEPOSIT) {
+            } else if(body.getTransactionType().toString() != BaseTransaction.TransactionTypeEnum.DEPOSIT.toString()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Specified transaction type: '"+ body.getTransactionType().toString() + "' incorrect. must be Deposit");
             } else if(toAccount.get().getAccountType() == BaseAccount.AccountTypeEnum.SAVINGS) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot directly deposit money to a savings account, operation must be done through a current account");
@@ -141,7 +141,7 @@ public class TransactionsApiController implements TransactionsApi {
             Optional<Account> fromAccount = accountsService.getAccountByIban(body.getFromAccount());
             if(body.getFromAccount() != null && !fromAccount.isPresent()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No account with IBAN " + body.getFromAccount() + " found.");
-            } else if(body.getTransactionType() != BaseTransaction.TransactionTypeEnum.WITHDRAWAL) {
+            } else if(body.getTransactionType().toString() != BaseTransaction.TransactionTypeEnum.WITHDRAWAL.toString()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Specified transaction type: '"+ body.getTransactionType().toString() + "' incorrect, must be Withdrawal");
             } else if(fromAccount.get().getAccountType() == BaseAccount.AccountTypeEnum.SAVINGS) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot directly withdraw money from a savings account, operation must be done through a current account");
