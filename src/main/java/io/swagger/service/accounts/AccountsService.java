@@ -1,38 +1,39 @@
 package io.swagger.service.accounts;
+
 import io.swagger.model.Account;
 import io.swagger.model.BaseModels.BaseAccount.AccountTypeEnum;
 import io.swagger.model.BaseModels.BaseAccount.StatusEnum;
 import io.swagger.model.DTO.AccountDTO.*;
-import io.swagger.model.Enums.Role;
 import io.swagger.model.Holder;
 import io.swagger.repository.AccountsRepo;
+import io.swagger.repository.HolderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.math.BigDecimal;
-import java.security.SecureRandom;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 @Service
 public class AccountsService {
     @Autowired
     private AccountsRepo accountsRepo;
+    @Autowired
+    private HolderRepository holderRepository;
 
     public Account addAccount(@Valid RequestBodyAccount body) {
         StatusEnum status = body.getStatus();
         AccountTypeEnum accountType = body.getAccountType();
         Integer holderId = body.getHolderId();
-        BigDecimal maxTransfer =  body.getMaxTransfer();
-        //TODO: DEFAULT WAARDES IN MODEL ZETTEN.
-        if (body.getMaxTransfer() == null){maxTransfer = new BigDecimal("500");}
+        if (!holderRepository.findById(holderId).isPresent()) {
+            return null;
+        }
+
+        BigDecimal maxTransfer = body.getMaxTransfer();
         BigDecimal minBalance = body.getMinBalance();
-        if (body.getMinBalance() == null){minBalance = new BigDecimal("-9900");}
 
         Account acc = new Account();
         acc.setStatus(status);
@@ -42,28 +43,37 @@ public class AccountsService {
         acc.setMinBalance(minBalance);
         acc.setMaxTransfer(maxTransfer);
 
+
         return accountsRepo.save(acc);
 
     }
 
-    public Optional<Account> getAccountByIban(String iban){
+    public Optional<Account> getAccountByIban(String iban) {
 
         return accountsRepo.findById(iban);
 
     }
 
     public Account deleteAccount(@Valid String selectIban) {
-        Account byIban = accountsRepo.findById(selectIban).get();
-        byIban.setStatus(StatusEnum.CLOSED);
-        return accountsRepo.save(byIban);
+        Optional<Account> byIban = accountsRepo.findById(selectIban);
+        if (!byIban.isPresent()) return null;
+
+        return accountsRepo.save(byIban.get());
 
     }
+
     public Account updateStatusAccount(@Valid String selectIban, RequestBodyUpdateAccount body) {
         StatusEnum status = body.getStatus();
         AccountTypeEnum accountType = body.getAccountType();
-        BigDecimal maxTransfer =  body.getMaxTransfer();
+        BigDecimal maxTransfer = body.getMaxTransfer();
         BigDecimal minBalance = body.getMinBalance();
-        Account acc = accountsRepo.findById(selectIban).get();
+
+
+        Optional<Account> optionalAccount = accountsRepo.findById(selectIban);
+        if (!optionalAccount.isPresent()) return null;
+
+        Account acc = optionalAccount.get();
+
         acc.setStatus(status);
         acc.setAccountType(accountType);
         acc.setBalance(new BigDecimal(0));
@@ -76,7 +86,12 @@ public class AccountsService {
     }
 
     public MaxTransfer updateMaxTransferByIban(String iban, MaxTransfer maxTransfer) {
-        Account account = accountsRepo.findById(iban).get();
+        Optional<Account> optionalAccount = accountsRepo.findById(iban);
+
+        if (!optionalAccount.isPresent()) return null;
+
+        Account account = optionalAccount.get();
+
         account.setMaxTransfer(maxTransfer.getMaxTransfer());
         MaxTransfer newMax = new MaxTransfer();
         newMax.setMaxTransfer(account.getMaxTransfer());
@@ -85,7 +100,12 @@ public class AccountsService {
     }
 
     public MinBalance updateMinAccount(@Valid String selecIban, MinBalance min) {
-        Account account = accountsRepo.findById(selecIban).get();
+        Optional<Account> optionalAccount = accountsRepo.findById(selecIban);
+
+        if (!optionalAccount.isPresent()) return null;
+
+        Account account = optionalAccount.get();
+
         account.setMinBalance(min.getMinBalance());
         MinBalance newMin = new MinBalance();
         newMin.setMinBalance(account.getMinBalance());
@@ -96,10 +116,10 @@ public class AccountsService {
     public List<Account> getAllAccounts(String includeClosed) {
         List<Account> accounts = Collections.emptyList();
 
-        if (includeClosed == null ||  includeClosed.equals("Yes")){
+        if (includeClosed == null || includeClosed.equals("Yes")) {
             accounts = (List<Account>) accountsRepo.findAll();
 
-        }else {
+        } else {
             accounts = accountsRepo.findAllWhereStatusOpen();
         }
 
@@ -127,7 +147,7 @@ public class AccountsService {
         accountsRepo.save(account);
     }
 
-    public void addTestAccounts(){
+    public void addTestAccounts() {
         Account account = new Account();
         account.setAccountType(AccountTypeEnum.CURRENT);
         account.setMaxTransfer(new BigDecimal("5000.00"));
@@ -156,5 +176,12 @@ public class AccountsService {
         account.setBalance(new BigDecimal("5000.25"));
         account.setHolderId(2);
         accountsRepo.save(account);
+    }
+
+    public List<Account> getAccountsByAuthentication(Authentication authentication) {
+        String mail = authentication.getName();
+        Holder acc = holderRepository.findByEmail(mail);
+        return acc.getAccounts();
+
     }
 }
