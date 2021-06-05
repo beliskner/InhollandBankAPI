@@ -17,6 +17,7 @@ import javax.validation.constraints.*;
 
 
 public class RequestBodyAccount extends BaseAccount  {
+  @NotNull
   @JsonProperty("holderId")
   private Integer holderId = null;
 
