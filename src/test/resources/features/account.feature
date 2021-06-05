@@ -1,11 +1,11 @@
 Feature: account test
 
   Scenario: Create a account
-    When Create a acount
+    When Create a account
     Then is the status of the request 201
 
 
-  Scenario: Get all acounts
+  Scenario: Get all accounts
     When i get all accounts
     Then is the status of the request 200
 
@@ -16,7 +16,7 @@ Feature: account test
   Scenario: Get all account by role employee gives ArrayOfAccount with 1 holder
     When Get all accounts by role "Employee"
     Then The accounts have role "Employee"
-    And The array holds 1 accout
+    And The array holds 1 account
 
   Scenario: Delete a account
     When i do a status change to closed on account with iban "NL00INHO0000000002"
