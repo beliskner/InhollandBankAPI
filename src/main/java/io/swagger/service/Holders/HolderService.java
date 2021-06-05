@@ -123,13 +123,13 @@ public class HolderService {
         holderRepository.save(holder4);
 
         Holder holder5 = new Holder();
-        holder5.setDailyLimit(new BigDecimal("25000000"));
-        holder5.setEmail("test@inholland.com");
-        holder5.setFirstName("test");
-        holder5.setLastName("test");
+        holder5.setDailyLimit(new BigDecimal("10000"));
+        holder5.setEmail("test@inholland.nl");
+        holder5.setFirstName("Test");
+        holder5.setLastName("Account");
         holder5.setRole(Role.ROLE_EMPLOYEE);
         holder5.setSalt(salt.toString());
-        holder5.setStatus(Holder.StatusEnum.FROZEN);
+        holder5.setStatus(Holder.StatusEnum.ACTIVE);
         holder5.setPassword(passwordEncoder.encode(fullPassword));
         holder5.setAccounts(accounts);
         holderRepository.save(holder5);
