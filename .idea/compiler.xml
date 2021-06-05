@@ -8,7 +8,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="InhollandBankAPI2" />
-        <module name="InhollandBankAPI" />
+        <module name="swagger-spring" />
         <module name="newpull4" />
       </profile>
     </annotationProcessing>
