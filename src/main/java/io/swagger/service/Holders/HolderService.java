@@ -123,16 +123,16 @@ public class HolderService {
         holderRepository.save(holder4);
 
         Holder holder5 = new Holder();
-        holder4.setDailyLimit(new BigDecimal("10000"));
-        holder4.setEmail("test@inholland.nl");
-        holder4.setFirstName("Test");
-        holder4.setLastName("Account");
-        holder4.setRole(Role.ROLE_EMPLOYEE);
-        holder4.setSalt(salt.toString());
-        holder4.setStatus(Holder.StatusEnum.ACTIVE);
-        holder4.setPassword(passwordEncoder.encode(fullPassword));
-        holder4.setAccounts(accounts);
-        holderRepository.save(holder4);
+        holder5.setDailyLimit(new BigDecimal("10000"));
+        holder5.setEmail("test@inholland.nl");
+        holder5.setFirstName("Test");
+        holder5.setLastName("Account");
+        holder5.setRole(Role.ROLE_EMPLOYEE);
+        holder5.setSalt(salt.toString());
+        holder5.setStatus(Holder.StatusEnum.ACTIVE);
+        holder5.setPassword(passwordEncoder.encode(fullPassword));
+        holder5.setAccounts(accounts);
+        holderRepository.save(holder5);
     }
 
     public Holder add(@Valid @RequestBody RequestBodyHolder body) {
