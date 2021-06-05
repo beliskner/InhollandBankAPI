@@ -54,8 +54,8 @@ public class Swagger2SpringBoot implements CommandLineRunner {
     public void doSomethingAfterStartup() {
         holderService.addInitialHolders();
         accountsService.addAccountForBank();
-//        accountsService.addAccountForBank();
-//        accountsService.addAccountForCustomer();
+        accountsService.addAccountForBank();
+        accountsService.addAccountForCustomer();
     }
 
     class ExitException extends RuntimeException implements ExitCodeGenerator {

@@ -28,7 +28,7 @@ public class transactionSteps {
     private String baseUrl = "http://localhost:8080/api/transactions";
     private RestTemplate template = new RestTemplate();
     private ResponseEntity<String> responseEntity;
-    private String authToken =  "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiYW5rQGluaG9sbGFuZC5ubCIsImF1dGgiOiJST0xFX0VNUExPWUVFIiwiaWF0IjoxNjIyOTIwNjU5LCJleHAiOjE2MjI5MjQyNTl9.fhAR7PcMvEFNB3F32n9hS7UGrQh-AZdvYmyEi2J_I_U";
+    private String authToken =  "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0QGluaG9sbGFuZC5jb20iLCJhdXRoIjoiUk9MRV9FTVBMT1lFRSIsImlhdCI6MTYyMjkyODc3NywiZXhwIjoxNjIyOTMyMzc3fQ.VxywFKPA1wy36kXxw8VvjHNLz91VGaUtYQoUEL6pFKw";
 
     @When("Create a transaction between accounts")
     public void createATransactionBetweenAccounts() throws URISyntaxException{
@@ -67,9 +67,9 @@ public class transactionSteps {
         headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         headers.setBearerAuth(authToken);
         String body = "{\n" +
-                "  \"Amount\": 5.00,\n" +
+                "  \"Amount\": 50.01,\n" +
                 "  \"TransactionType\": \"Withdrawal\",\n" +
-                "  \"fromAccount\": \"NL00INHO0000000002\"\n" +
+                "  \"fromAccount\": \"NL00INHO0000000004\"\n" +
                 "}";
         URI uri = new URI(baseUrl+"/withdrawal");
         HttpEntity<String> entity = new HttpEntity<>(body, headers);
