@@ -4,6 +4,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.swagger.model.Account;
+import io.swagger.model.DTO.AccountDTO.ArrayOfAccounts;
 import org.junit.Assert;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
@@ -17,7 +18,7 @@ public class AccountSteps {
     private String baseUrl = "http://localhost:8080/api/accounts";
     private RestTemplate template = new RestTemplate();
     private ResponseEntity<String> responseEntity;
-    private String authToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiYW5rQGluaG9sbGFuZC5ubCIsImF1dGgiOiJST0xFX0VNUExPWUVFIiwiaWF0IjoxNjIyODg0NTUwLCJleHAiOjE2MjI4ODgxNTB9.Oek2QvwbTazNslslBNyGlSqckv4lYk-IKc6JEWk2wZg";
+    private String authToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiYW5rQGluaG9sbGFuZC5ubCIsImF1dGgiOiJST0xFX0VNUExPWUVFIiwiaWF0IjoxNjIyODk0ODk1LCJleHAiOjE2MjI4OTg0OTV9.dmhowCe6gufixU15fD1D-lgaM1OLEV5AvksCg4Cum90";
 
 
 
@@ -47,7 +48,14 @@ public class AccountSteps {
         headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         headers.setBearerAuth(authToken);
         URI uri = new URI(baseUrl+"?includeClosed=No");
-        responseEntity = template.getForEntity(uri,String.class);
+        HttpEntity<String> entity = new HttpEntity<>( headers);
+
+        responseEntity = template.exchange(uri, HttpMethod.GET, entity, String.class);
+        //template.getForEntity(uri, new ResponseEntity<ArrayOfAccounts>);
+        //responseEntity = template.exchange(uri, entity, String.class);
+        //
+        //responseEntity = template.getForEntity(headers)
+        //responseEntity = template.
     }
 
 
