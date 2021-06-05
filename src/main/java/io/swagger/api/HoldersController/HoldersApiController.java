@@ -221,7 +221,7 @@ public class HoldersApiController implements HoldersApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                Holder.StatusEnum status = mapper.map(body.getStatus(), Holder.StatusEnum.class);
+                Holder.StatusEnum status = Holder.StatusEnum.fromValue(body.getStatus().toString());
                 Holder holder = holderService.updateHolderStatusByHolderId(id, status);
                 return new ResponseEntity(holder, HttpStatus.OK);
             } catch (Exception e) {

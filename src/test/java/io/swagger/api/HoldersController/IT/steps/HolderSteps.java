@@ -8,6 +8,7 @@ import io.swagger.configuration.ObjectMapper;
 import io.swagger.model.DTO.HolderDTO.ArrayOfHolders;
 import io.swagger.model.DTO.HolderDTO.BodyDailyLimit;
 import io.swagger.model.Enums.Role;
+import io.swagger.model.Holder;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,7 +27,7 @@ public class HolderSteps {
     // "email": "bank@inholland.nl",
     // "email": "peter@appel.com",
 
-    private String authTokenEmployee = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiYW5rQGluaG9sbGFuZC5ubCIsImF1dGgiOiJST0xFX0VNUExPWUVFIiwiaWF0IjoxNjIyOTI3MDE0LCJleHAiOjE2MjI5MzA2MTR9.mNvUyOUkNuvUztOGf9pc8s8O4H2_YXMllvXEGK2zGlY";
+    private String authTokenEmployee = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiYW5rQGluaG9sbGFuZC5ubCIsImF1dGgiOiJST0xFX0VNUExPWUVFIiwiaWF0IjoxNjIyOTM2ODg2LCJleHAiOjE2MjI5NDA0ODZ9.f4VPDruPihBtoRbLYYZgiIBBdHuxdKcnmhnn8YIhzJc";
     private String authTokenCustomer = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwZXRlckBhcHBlbC5jb20iLCJhdXRoIjoiUk9MRV9DVVNUT01FUiIsImlhdCI6MTYyMjkxMDkwMSwiZXhwIjoxNjIyOTE0NTAxfQ.LzZLRcVxbZI4zC5W-rTUOACWrsZNOasPySzFU-kb-dA";
     private HttpHeaders emptyHeaders = new HttpHeaders();
     private String baseUrl = "http://localhost:8080/api/holders/";
@@ -215,6 +216,55 @@ public class HolderSteps {
         Assert.assertEquals(status, holder.get("status"));
     }
 
+    // ---------- Tests for getting all accounts for a holder by id ----------
+    @When("Get accounts by holder id {int}")
+    public void getAccountsByHolderId(int id) throws URISyntaxException {
+        HttpHeaders headers = setHeaders(emptyHeaders, true);
+        URI uri = new URI(baseUrl + id + "/accounts");
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+        responseEntity = template.exchange(uri, HttpMethod.GET, entity, String.class);
+    }
+
+    @And("The first account in list has iban {string}")
+    public void theFirstAccountInListHasIban(String iban) throws JSONException {
+        String response = responseEntity.getBody();
+        JSONArray accounts = new JSONArray(response);
+        Assert.assertEquals(iban, accounts.getJSONObject(0).get("iban"));
+    }
+
+    // ---------- Tests for updating the daily limit ----------
+    @When("Update daily limit by holder id {int} to \\({double})")
+    public void updateDailyLimitByHolderIdTo(int id, double dailyLimit) throws URISyntaxException {
+        HttpHeaders headers = setHeaders(emptyHeaders, true);
+        URI uri = new URI(baseUrl + id);
+        String body = "{\n" +
+                "  \"dailyLimit\":" + dailyLimit + ",\n" +
+                "  \"email\": \"bank@inholland.nl\",\n" +
+                "  \"firstName\": \"Inholland\",\n" +
+                "  \"lastName\": \"Bank\",\n" +
+                "  \"role\": \"Employee\"\n" +
+                "}";
+        HttpEntity<String> entity = new HttpEntity<>(body, headers);
+        responseEntity = template.exchange(uri, HttpMethod.PUT, entity, String.class);
+    }
+
+    @And("The response gives dailyLimit \\({double})")
+    public void theResponseGivesDailyLimit(double dailyLimit) throws JSONException {
+        String response = responseEntity.getBody();
+        JSONObject jsonObject = new JSONObject(response);
+        Assert.assertEquals(dailyLimit, jsonObject.get("dailyLimit"));
+    }
+
+    // ---------- Tests for updating the holder status ----------
+    @When("Update holder status by id {int} to {string}")
+    public void updateHolderStatusByIdTo(int id, String status) throws URISyntaxException {
+        HttpHeaders headers = setHeaders(emptyHeaders, true);
+        URI uri = new URI(baseUrl + id + "/status");
+        String body = "{\"status\":\"" + status + "\"}";
+        HttpEntity<String> entity = new HttpEntity(body, headers);
+        responseEntity = template.exchange(uri, HttpMethod.PUT, entity, String.class);
+    }
+
     // ---------- Tests for expected status response ----------
     @Then("The request status code is {int}")
     public void theRequestStatusCodeIs(int expected) {
@@ -226,14 +276,10 @@ public class HolderSteps {
 
     @Then("The bad request status code is {int}")
     public void theBadRequestStatusCodeIs(int expected) {
-        System.out.println("badreq status code is");
-        System.out.println(expected);
-        System.out.println(errorCode);
         Assert.assertEquals(expected, errorCode);
         // reset error code for other bad request tests
         errorCode = 0;
     }
-
 
 
 }

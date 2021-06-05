@@ -11,7 +11,7 @@ Feature: Holder test
   Scenario: Get all holders by role employee gives ArrayOfHolders with 1 holder
     When Get all holders by role "Employee"
     Then The holders have role "Employee"
-    And The array holds 1 holders
+    And The array holds 2 holders
 
   Scenario: Get all holders by first name search gives list of correlating holders
     When Get all holders by first name "in"
@@ -38,9 +38,9 @@ Feature: Holder test
     And The holder email is "bank@inholland.nl"
 
   Scenario: Update first name of a holder
-    When Update holder with id 1 to first name "Bert"
+    When Update holder with id 1 to first name "Linda"
     Then The request status code is 200
-    And The holder first name is "Bert"
+    And The holder first name is "Linda"
 
   Scenario: Deleting a holder by id sets the holder status to frozen
     When Delete holder with id 2
@@ -48,15 +48,16 @@ Feature: Holder test
     And The holder status is "Frozen"
 
   Scenario: Get accounts from a specific holder
-    When Get accounts by holder id
+    When Get accounts by holder id 1
     Then The request status code is 200
+    And The first account in list has iban "NL00INHO0000000001"
 
   Scenario: Update daily limit by holder id
-    When Update daily limit by holder "id"
+    When Update daily limit by holder id 1 to (377.25)
     Then The request status code is 200
+    And The response gives dailyLimit (377.25)
 
   Scenario: Update holder status by id
-    When Update holder status by "id"
-    And Holder status is "Open"
+    When Update holder status by id 2 to "Active"
     Then The request status code is 200
-    And Holder status is
+    And The holder status is "Active"
