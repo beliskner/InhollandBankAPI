@@ -17,7 +17,7 @@ public class AccountSteps {
     private String baseUrl = "http://localhost:8080/api/accounts";
     private RestTemplate template = new RestTemplate();
     private ResponseEntity<String> responseEntity;
-    private String authToken =  "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiYW5rQGluaG9sbGFuZC5ubCIsImF1dGgiOiJST0xFX0VNUExPWUVFIiwiaWF0IjoxNjIyOTIwNjU5LCJleHAiOjE2MjI5MjQyNTl9.fhAR7PcMvEFNB3F32n9hS7UGrQh-AZdvYmyEi2J_I_U";
+    private String authToken =  "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0QGluaG9sbGFuZC5ubCIsImF1dGgiOiJST0xFX0VNUExPWUVFIiwiaWF0IjoxNjIyOTMyNTQ1LCJleHAiOjE2MjI5MzYxNDV9.F_fNGKgDGIS7UmsuS-pz8v8IuN4npB2HRuY_mQ39toI";
 
 
     @When("Create a account")

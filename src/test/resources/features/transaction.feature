@@ -17,11 +17,11 @@ When i get all transactions
 Then is the status of the request 200
 
   Scenario: Get transactions by id
-    When i get transactions by id is 5
+    When i get transactions by id is 6
     Then is the status of the request 200
 
   Scenario: Get tan transactions by id
-    When i get tan transactions by id is 5
+    When i get tan transactions by id is 6
     Then is the status of the request 200
 
   Scenario: verify transaction by tan
