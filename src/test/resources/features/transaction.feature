@@ -12,22 +12,22 @@ Feature: transactions test
     When Create a transaction for widrawl
     Then is the status of the request 201
 
-#Scenario: Get all transactions
-#When i get all transactions
-#Then is the status of the request 200
-#
-#  Scenario: Get transactions by id
-#    When i get transactions by id
-#    Then is the status of the request 200
-#
-#  Scenario: Get tan transactions by id
-#    When i get tan transactions by id
-#    Then is the status of the request 200
-#
-#  Scenario: verify transaction by tan
-#    When i verify transaction by tan
-#    Then is the status of the request 200
-#
-#Scenario: Get all transactions gives an ArrayOfTransactions object
-#When Get all transactions
-#Then The response is an "ArrayOfTransactions" object
+Scenario: Get all transactions
+When i get all transactions
+Then is the status of the request 200
+
+  Scenario: Get transactions by id
+    When i get transactions by id is 5
+    Then is the status of the request 200
+
+  Scenario: Get tan transactions by id
+    When i get tan transactions by id is 5
+    Then is the status of the request 200
+
+  Scenario: verify transaction by tan
+    When i verify transaction by tan
+    Then is the status of the request 200
+
+Scenario: Get all transactions gives an ArrayOfTransactions object
+When Get all transactions
+Then The response is an "ArrayOfTransactions" object
