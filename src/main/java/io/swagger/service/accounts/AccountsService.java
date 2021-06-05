@@ -120,7 +120,7 @@ public class AccountsService {
         Account account = new Account();
         account.setAccountType(AccountTypeEnum.CURRENT);
         account.setMaxTransfer(new BigDecimal("5000.00"));
-        account.setMinBalance(new BigDecimal("-5000.00"));
+        account.setMinBalance(new BigDecimal("-500.00"));
         account.setStatus(StatusEnum.OPEN);
         account.setBalance(new BigDecimal("1000000.25"));
         account.setHolderId(1);
