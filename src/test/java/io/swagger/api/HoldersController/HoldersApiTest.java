@@ -1,4 +1,4 @@
-package io.swagger.api.holderapi;
+package io.swagger.api.HoldersController;
 
 import io.swagger.model.Holder;
 import io.swagger.service.Holders.HolderService;

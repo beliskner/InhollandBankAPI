@@ -105,7 +105,7 @@ public class HolderService {
         holder3.setLastName("stok");
         holder3.setRole(Role.ROLE_CUSTOMER);
         holder3.setSalt(salt.toString());
-        holder3.setStatus(Holder.StatusEnum.FROZEN);
+        holder3.setStatus(Holder.StatusEnum.ACTIVE);
         holder3.setPassword(passwordEncoder.encode(fullPassword));
         holder3.setAccounts(accounts);
         holderRepository.save(holder3);

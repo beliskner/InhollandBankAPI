@@ -3,7 +3,7 @@
  * https://github.com/swagger-api/swagger-codegen
  * Do not edit the class manually.
  */
-package io.swagger.api.holderapi;
+package io.swagger.api.HoldersController;
 
 import io.swagger.model.DTO.AccountDTO.ArrayOfAccounts;
 import io.swagger.model.DTO.HolderDTO.ArrayOfHolders;
