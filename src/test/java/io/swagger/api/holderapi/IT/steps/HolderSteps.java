@@ -15,7 +15,7 @@ public class HolderSteps {
     private String baseUrl = "http://localhost:8080/api/holders/";
     private RestTemplate template = new RestTemplate();
     private ResponseEntity<String> responseEntity;
-    private String authToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiYW5rQGluaG9sbGFuZC5ubCIsImF1dGgiOiJST0xFX0VNUExPWUVFIiwiaWF0IjoxNjIyODM2NDMwLCJleHAiOjE2MjI4NDAwMzB9.zuNQCL1dbBErvalOL1_I2NWUj7E44qDnsRO-Au3NSHo";
+    private String authToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiYW5rQGluaG9sbGFuZC5ubCIsImF1dGgiOiJST0xFX0VNUExPWUVFIiwiaWF0IjoxNjIyODk2ODc5LCJleHAiOjE2MjI5MDA0Nzl9.TAiZdWp1QcY_XHCj0mJ8G3Ty5p8LZRZcuKgyafb7FuQ";
 
     @When("Create a holder")
     public void createAHolder() throws URISyntaxException {
@@ -40,6 +40,7 @@ public class HolderSteps {
         int response = responseEntity.getStatusCodeValue();
         Assert.assertEquals(expected, response);
     }
+
 
 
     @When("Update a minBalance van account {string} en minbalance {int}")
