@@ -50,7 +50,7 @@ class HoldersApiTest {
 
 
         holderService.addInitialHolders();
-        accountsService.addAccountForBank();
+        accountsService.addAccountsForHolders();
 
 
     }

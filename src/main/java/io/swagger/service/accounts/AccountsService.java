@@ -124,7 +124,7 @@ public class AccountsService {
         addTestAccountToTestHolder(5);
     }
 
-    private void addTemplateAccountToHolderWithId(Integer id) {
+    public void addTemplateAccountToHolderWithId(Integer id) {
         Account account = new Account();
         account.setAccountType(AccountTypeEnum.CURRENT);
         account.setMaxTransfer(new BigDecimal("5000.00"));
@@ -135,11 +135,11 @@ public class AccountsService {
         accountsRepo.save(account);
     }
 
-    private void addTestAccountToTestHolder(Integer id) {
+    public void addTestAccountToTestHolder(Integer id) {
         Account account = new Account();
         account.setAccountType(AccountTypeEnum.CURRENT);
         account.setMaxTransfer(new BigDecimal("50000.00"));
-        account.setMinBalance(new BigDecimal("-5000.00"));
+        account.setMinBalance(new BigDecimal("-500.00"));
         account.setStatus(StatusEnum.OPEN);
         account.setBalance(new BigDecimal("50000.25"));
         account.setHolderId(id);
