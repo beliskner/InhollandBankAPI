@@ -15,7 +15,7 @@ public class HolderSteps {
     private String baseUrl = "http://localhost:8080/api/holders/";
     private RestTemplate template = new RestTemplate();
     private ResponseEntity<String> responseEntity;
-    private String authToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiYW5rQGluaG9sbGFuZC5ubCIsImF1dGgiOiJST0xFX0VNUExPWUVFIiwiaWF0IjoxNjIyODM2NDMwLCJleHAiOjE2MjI4NDAwMzB9.zuNQCL1dbBErvalOL1_I2NWUj7E44qDnsRO-Au3NSHo";
+    private String authToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiYW5rQGluaG9sbGFuZC5ubCIsImF1dGgiOiJST0xFX0VNUExPWUVFIiwiaWF0IjoxNjIyODkzMjExLCJleHAiOjE2MjI4OTY4MTF9.cBPW4ufLYIFbfDGpBaiSK8vfhGEvsLq7Yri3CKbCC7k";
 
     @When("Create a holder")
     public void createAHolder() throws URISyntaxException {
