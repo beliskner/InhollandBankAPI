@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -31,6 +32,18 @@ public class AuthCheck {
             return false;
         }
     }
+
+    public Role getAccountRoleByAuthentication(Authentication authentication){
+        String email = authentication.getName();
+        return holderService.getHolderByEmail(email).getRole();
+    }
+
+
+
+    public Boolean isOwnerOfAccountsOrEmployee(List<Account> accounts) {
+        return accounts.stream().allMatch(account ->isOwnerOfAccountOrEmployee(SecurityContextHolder.getContext().getAuthentication(), account));
+    }
+
 
     public Boolean isHolderMakingRequestOrEmployee(Authentication authentication, Holder holder) {
         String email = authentication.getName();

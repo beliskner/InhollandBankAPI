@@ -1,7 +1,7 @@
-package io.swagger.api.HoldersController;
+package io.swagger.api.accountApi;
 
-import io.swagger.model.Holder;
-import io.swagger.service.Holders.HolderService;
+import io.swagger.model.Account;
+import io.swagger.service.accounts.AccountsService;
 import org.junit.Before;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -11,14 +11,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
+import java.util.Arrays;
+import java.util.List;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -27,7 +29,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
-class HoldersApiTest {
+
+
+class accountApiTest {
 
     @Autowired
     private WebApplicationContext webApplicationContext;
@@ -35,46 +39,35 @@ class HoldersApiTest {
     @Autowired
     private MockMvc mvc;
 
+    private Account acc;
+    private Account acc2;
+
+    @Autowired
+
     @MockBean
-    private HolderService holderService;
+    private AccountsService accountService;
 
     @BeforeAll
     public void startTest() {
         System.out.println("Start testing HoldersApiController");
-
-        holderService.addInitialHolders();
     }
 
     @Before()
-    public void setup()
-    {
-        //Init MockMvc Object and build
+    public void setup() {
         mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     }
 
 
+    @WithMockUser(roles = "EMPLOYEE")
     @Test
-    public void getAllHoldersTest() throws Exception {
-        // TODO: MockMvc gebruikt niet de DB. Dus users gemaakt in de applicatie bestaan niet. er moet een mockUser gemaakt worden om auth te fixen
-        // TODO: ik weet ook niet hoe token dan meegegeven wordt met mockUser/mockAuth
-        String token = "placeholder";
-        this.mvc.perform(MockMvcRequestBuilders.get("http://localhost:8080/api/holders")
-                .accept("application/json")
-                .header("Authorization", "Bearer " + token))
-                .andExpect(status().isOk());
-    }
+    public void getAllAccounts() throws Exception {
+        List<Account> allAccounts = Arrays.asList(acc, acc2);
+        given(accountService.getAllAccounts(null )).willReturn(allAccounts);
 
-    @Test
-    public void createHolderShouldNotBeNull() {
-        Holder holder = new Holder();
-        assertNotNull(holder);
+        mvc.perform(get("/accounts")
+                .accept("/")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)));
     }
-
-    @Test
-    public void getAllHoldersShouldReturnJsonArray() throws Exception {
-        this.mvc.perform(get("/api/holders")).andExpect(
-                status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)));
-    }
-
 }

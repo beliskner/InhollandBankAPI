@@ -4,28 +4,19 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.cucumber.messages.internal.com.google.gson.Gson;
-import io.swagger.configuration.ObjectMapper;
 import io.swagger.model.DTO.HolderDTO.ArrayOfHolders;
-import io.swagger.model.DTO.HolderDTO.BodyDailyLimit;
-import io.swagger.model.Enums.Role;
-import io.swagger.model.Holder;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.springframework.http.*;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Map;
 
 public class HolderSteps {
-
-    // "email": "bank@inholland.nl",
-    // "email": "peter@appel.com",
 
     private String authTokenEmployee = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiYW5rQGluaG9sbGFuZC5ubCIsImF1dGgiOiJST0xFX0VNUExPWUVFIiwiaWF0IjoxNjIyOTM2ODg2LCJleHAiOjE2MjI5NDA0ODZ9.f4VPDruPihBtoRbLYYZgiIBBdHuxdKcnmhnn8YIhzJc";
     private String authTokenCustomer = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwZXRlckBhcHBlbC5jb20iLCJhdXRoIjoiUk9MRV9DVVNUT01FUiIsImlhdCI6MTYyMjkxMDkwMSwiZXhwIjoxNjIyOTE0NTAxfQ.LzZLRcVxbZI4zC5W-rTUOACWrsZNOasPySzFU-kb-dA";
@@ -156,7 +147,6 @@ public class HolderSteps {
         } catch(HttpStatusCodeException e) {
             // Error 422 expected, set field for the then test
             errorCode = e.getStatusCode().value();
-            System.out.println(e.getStatusCode().value());
         }
 
     }
@@ -280,6 +270,5 @@ public class HolderSteps {
         // reset error code for other bad request tests
         errorCode = 0;
     }
-
 
 }

@@ -4,6 +4,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.model.validation.EnumNamePattern;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 
@@ -14,6 +15,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.validation.Valid;
+import javax.validation.constraints.*;
 
 /**
  * Base of account
@@ -50,9 +52,7 @@ public class BaseAccount   {
 
   public enum AccountTypeEnum {
     CURRENT("Current"),
-    
     SAVINGS("Savings");
-
     private String value;
 
     AccountTypeEnum(String value) {
@@ -75,12 +75,17 @@ public class BaseAccount   {
       return null;
     }
   }
+
+  @NotNull(message = "value cant be null and must be Savings or Current")
+  @EnumNamePattern(regexp = "SAVINGS||CURRENT", message = "value must be Savings or Current")
   @JsonProperty("accountType")
-  private AccountTypeEnum accountType = null;
+  private AccountTypeEnum accountType;
 
   /**
    * Status of account. Can be open or closed
    */
+
+
   public enum StatusEnum {
     CLOSED("Closed"),
     OPEN("Open");
@@ -109,14 +114,19 @@ public class BaseAccount   {
       return null;
     }
   }
+  @NotNull(message = "value cant be null and must be Open or Closed")
+  @EnumNamePattern(regexp = "OPEN||CLOSED", message = "value must be Open or Closed")
   @JsonProperty("status")
-  private StatusEnum status = null;
+  private StatusEnum status;
 
+  @DecimalMin(value = "-500.50")
+  @Digits(integer = 20, fraction = 2)
   @JsonProperty("minBalance")
-  private BigDecimal minBalance = null;
+  private BigDecimal minBalance;
+
 
   @JsonProperty("maxTransfer")
-  private BigDecimal maxTransfer = null;
+  private BigDecimal maxTransfer;
 
   public BaseAccount accountType(AccountTypeEnum accountType) {
     this.accountType = accountType;
@@ -137,6 +147,8 @@ public class BaseAccount   {
     this.accountType = accountType;
   }
 
+  @NotNull
+  @EnumNamePattern(regexp = "Open|Closed")
   public BaseAccount status(StatusEnum status) {
     this.status = status;
     return this;

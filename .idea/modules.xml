@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/InhollandBankAPI.iml" filepath="$PROJECT_DIR$/.idea/InhollandBankAPI.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/newpull4.iml" filepath="$PROJECT_DIR$/.idea/newpull4.iml" />
       <module fileurl="file://$PROJECT_DIR$/swagger-spring.iml" filepath="$PROJECT_DIR$/swagger-spring.iml" />
     </modules>
   </component>
