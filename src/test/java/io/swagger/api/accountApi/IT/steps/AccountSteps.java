@@ -17,7 +17,7 @@ public class AccountSteps {
     private String baseUrl = "http://localhost:8080/api/accounts";
     private RestTemplate template = new RestTemplate();
     private ResponseEntity<String> responseEntity;
-    private String authToken =  "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiYW5rQGluaG9sbGFuZC5ubCIsImF1dGgiOiJST0xFX0VNUExPWUVFIiwiaWF0IjoxNjIyOTIwNjU5LCJleHAiOjE2MjI5MjQyNTl9.fhAR7PcMvEFNB3F32n9hS7UGrQh-AZdvYmyEi2J_I_U";
+    private String authToken =  "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0QGluaG9sbGFuZC5ubCIsImF1dGgiOiJST0xFX0VNUExPWUVFIiwiaWF0IjoxNjIyOTMyNTQ1LCJleHAiOjE2MjI5MzYxNDV9.F_fNGKgDGIS7UmsuS-pz8v8IuN4npB2HRuY_mQ39toI";
 
 
     @When("Create a account")
@@ -49,7 +49,16 @@ public class AccountSteps {
 
         responseEntity = template.exchange(uri, HttpMethod.GET, entity, String.class);
     }
+    @When("Get all accounts")
+    public void getAllAccounts() throws URISyntaxException {
+        headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+        headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        headers.setBearerAuth(authToken);
+        URI uri = new URI(baseUrl + "?iban=NL00INHO0000000002");
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+        responseEntity = template.exchange(uri, HttpMethod.GET, entity, String.class);
 
+    }
 
     @When("i do a status change to closed on account with iban {string}")
     public void iDoAStatusChangeToClosedOnAccountWithIban(String iban) throws URISyntaxException {
@@ -97,6 +106,8 @@ public class AccountSteps {
         int response = responseEntity.getStatusCodeValue();
         Assert.assertEquals(expected, response);
     }
+
+
 
 
 

@@ -4,6 +4,7 @@ import io.swagger.model.Account;
 import io.swagger.model.BaseModels.BaseAccount.AccountTypeEnum;
 import io.swagger.model.BaseModels.BaseAccount.StatusEnum;
 import io.swagger.model.DTO.AccountDTO.*;
+import io.swagger.model.Enums.Role;
 import io.swagger.model.Holder;
 import io.swagger.repository.AccountsRepo;
 import io.swagger.repository.HolderRepository;
@@ -42,7 +43,6 @@ public class AccountsService {
         acc.setBalance(new BigDecimal(0));
         acc.setMinBalance(minBalance);
         acc.setMaxTransfer(maxTransfer);
-
 
         return accountsRepo.save(acc);
 
@@ -136,45 +136,33 @@ public class AccountsService {
         return accounts;
     }
 
-    public void addAccountForBank() {
-        Account account = new Account();
-        account.setAccountType(AccountTypeEnum.CURRENT);
-        account.setMaxTransfer(new BigDecimal("5000.00"));
-        account.setMinBalance(new BigDecimal("-500.00"));
-        account.setStatus(StatusEnum.OPEN);
-        account.setBalance(new BigDecimal("1000000.25"));
-        account.setHolderId(1);
-        accountsRepo.save(account);
+    public void addAccountsForHolders() {
+        addTemplateAccountToHolderWithId(1);
+        addTemplateAccountToHolderWithId(2);
+        addTemplateAccountToHolderWithId(3);
+        addTemplateAccountToHolderWithId(4);
+        addTestAccountToTestHolder(5);
     }
 
-    public void addTestAccounts() {
-        Account account = new Account();
-        account.setAccountType(AccountTypeEnum.CURRENT);
-        account.setMaxTransfer(new BigDecimal("5000.00"));
-        account.setMinBalance(new BigDecimal("-5000.00"));
-        account.setStatus(StatusEnum.OPEN);
-        account.setBalance(new BigDecimal("1000000.25"));
-        account.setHolderId(1);
-        accountsRepo.save(account);
-
-        Account account2 = new Account();
-        account.setAccountType(AccountTypeEnum.CURRENT);
-        account.setMaxTransfer(new BigDecimal("5000.00"));
-        account.setMinBalance(new BigDecimal("-5000.00"));
-        account.setStatus(StatusEnum.OPEN);
-        account.setBalance(new BigDecimal("1000000.25"));
-        account.setHolderId(1);
-        accountsRepo.save(account);
-    }
-
-    public void addAccountForCustomer() {
+    public void addTemplateAccountToHolderWithId(Integer id) {
         Account account = new Account();
         account.setAccountType(AccountTypeEnum.CURRENT);
         account.setMaxTransfer(new BigDecimal("5000.00"));
         account.setMinBalance(new BigDecimal("-500.00"));
         account.setStatus(StatusEnum.OPEN);
         account.setBalance(new BigDecimal("5000.25"));
-        account.setHolderId(2);
+        account.setHolderId(id);
+        accountsRepo.save(account);
+    }
+
+    public void addTestAccountToTestHolder(Integer id) {
+        Account account = new Account();
+        account.setAccountType(AccountTypeEnum.CURRENT);
+        account.setMaxTransfer(new BigDecimal("50000.00"));
+        account.setMinBalance(new BigDecimal("-500.00"));
+        account.setStatus(StatusEnum.OPEN);
+        account.setBalance(new BigDecimal("50000.25"));
+        account.setHolderId(id);
         accountsRepo.save(account);
     }
 
