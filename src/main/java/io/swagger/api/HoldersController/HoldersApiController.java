@@ -105,8 +105,7 @@ public class HoldersApiController implements HoldersApi {
                 return new ResponseEntity<ArrayOfHolders>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-
-        return new ResponseEntity<ArrayOfHolders>(HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<ArrayOfHolders>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public ResponseEntity<ReturnBodyHolder> getHolderById(@Min(1)@Parameter(in = ParameterIn.PATH, description = "Gets a holder by ID. A holder is a person/entity with a portfolio of accounts Each holder is identified by a numeric `id`. ", required=true, schema=@Schema(allowableValues={  }, minimum="1"
@@ -114,23 +113,24 @@ public class HoldersApiController implements HoldersApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
                 Holder holder = holderService.getHolderById(id);
-                if (holder != null) {
-                    String json = objectMapper.writeValueAsString(holder);
-                    return new ResponseEntity<ReturnBodyHolder>(objectMapper.readValue(json, ReturnBodyHolder.class), HttpStatus.OK);
+                if (authCheck.isHolderMakingRequestOrEmployee(authentication, holder)) {
+                    if (holder != null) {
+                        String json = objectMapper.writeValueAsString(holder);
+                        return new ResponseEntity<ReturnBodyHolder>(objectMapper.readValue(json, ReturnBodyHolder.class), HttpStatus.OK);
+                    } else {
+                        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Holder with id " + id + " not found");
+                    }
                 } else {
-                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Holder with id " + id + " not found");
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN);
                 }
-            } catch(JsonProcessingException e) {
-                log.error("Couldn't process Json", e);
-                return new ResponseEntity<ReturnBodyHolder>(HttpStatus.INTERNAL_SERVER_ERROR);
             } catch (IOException e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<ReturnBodyHolder>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-
-        return new ResponseEntity<ReturnBodyHolder>(HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<ReturnBodyHolder>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @PreAuthorize("hasRole('EMPLOYEE')")
@@ -139,15 +139,19 @@ public class HoldersApiController implements HoldersApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                Holder holder = holderService.updateHolderByHolderId(id, body);
-                return new ResponseEntity(holder, HttpStatus.OK);
+                Holder holderExist = holderService.getHolderById(id);
+                if (holderExist != null) {
+                    Holder holder = holderService.updateHolderByHolderId(id, body);
+                    return new ResponseEntity(holder, HttpStatus.OK);
+                } else {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Holder with id " + id + " not found");
+                }
             } catch (Exception e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<ReturnBodyHolder>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-
-        return new ResponseEntity<ReturnBodyHolder>(HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<ReturnBodyHolder>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @PreAuthorize("hasRole('EMPLOYEE')")
@@ -156,14 +160,18 @@ public class HoldersApiController implements HoldersApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                Holder holder = holderService.deleteHolderById(id);
-                return new ResponseEntity(holder, HttpStatus.OK);
+                Holder holderExist = holderService.getHolderById(id);
+                if (holderExist != null) {
+                    Holder holder = holderService.deleteHolderById(id);
+                    return new ResponseEntity(holder, HttpStatus.OK);
+                } else {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Holder with id " + id + " not found");
+                }
             } catch (Exception e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<ReturnBodyHolder>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-
         return new ResponseEntity<ReturnBodyHolder>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -176,8 +184,12 @@ public class HoldersApiController implements HoldersApi {
                 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
                 Holder holder = holderService.getHolderById(id);
                 if (authCheck.isHolderMakingRequestOrEmployee(authentication, holder)) {
-                    List<Account> accounts = holderService.getAccountsByHolderId(id, includeClosed);
-                    return new ResponseEntity(accounts, HttpStatus.OK);
+                    if (holder != null) {
+                        List<Account> accounts = holderService.getAccountsByHolderId(id, includeClosed);
+                        return new ResponseEntity(accounts, HttpStatus.OK);
+                    } else {
+                        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Holder with id " + id + " not found");
+                    }
                 } else {
                     throw new ResponseStatusException(HttpStatus.FORBIDDEN);
                 }
@@ -186,8 +198,7 @@ public class HoldersApiController implements HoldersApi {
                 return new ResponseEntity<ArrayOfAccounts>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-
-        return new ResponseEntity<ArrayOfAccounts>(HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<ArrayOfAccounts>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public ResponseEntity<BodyDailyLimit> updateDailyLimitByHolderId(@Min(1)@Parameter(in = ParameterIn.PATH, description = "Updates a holder by ID. A holder is a person/entity with a portfolio of accounts Each holder is identified by a numeric `id`. ", required=true, schema=@Schema(allowableValues={  }, minimum="1"
@@ -198,9 +209,13 @@ public class HoldersApiController implements HoldersApi {
                 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
                 Holder holder = holderService.getHolderById(id);
                 if (authCheck.isHolderMakingRequestOrEmployee(authentication, holder)) {
-                    Holder updatedHolder = holderService.updateDailyLimitByHolderId(id, body.getDailyLimit());
-                    String json = objectMapper.writeValueAsString(updatedHolder);
-                    return new ResponseEntity<BodyDailyLimit>(objectMapper.readValue(json, BodyDailyLimit.class), HttpStatus.OK);
+                    if (holder != null) {
+                        Holder updatedHolder = holderService.updateDailyLimitByHolderId(id, body.getDailyLimit());
+                        String json = objectMapper.writeValueAsString(updatedHolder);
+                        return new ResponseEntity<BodyDailyLimit>(objectMapper.readValue(json, BodyDailyLimit.class), HttpStatus.OK);
+                    } else {
+                        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Holder with id " + id + " not found");
+                    }
                 } else {
                     throw new ResponseStatusException(HttpStatus.FORBIDDEN);
                 }
@@ -209,8 +224,7 @@ public class HoldersApiController implements HoldersApi {
                 return new ResponseEntity<BodyDailyLimit>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-
-        return new ResponseEntity<BodyDailyLimit>(HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<BodyDailyLimit>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 
@@ -221,16 +235,20 @@ public class HoldersApiController implements HoldersApi {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                Holder.StatusEnum status = Holder.StatusEnum.fromValue(body.getStatus().toString());
-                Holder holder = holderService.updateHolderStatusByHolderId(id, status);
-                return new ResponseEntity(holder, HttpStatus.OK);
+                Holder holder = holderService.getHolderById(id);
+                if (holder != null) {
+                    Holder.StatusEnum status = Holder.StatusEnum.fromValue(body.getStatus().toString());
+                    Holder updatedHolder = holderService.updateHolderStatusByHolderId(id, status);
+                    return new ResponseEntity(updatedHolder, HttpStatus.OK);
+                } else {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Holder with id " + id + " not found");
+                }
             } catch (Exception e) {
                 log.error("Couldn't serialize response for content type application/json", e);
                 return new ResponseEntity<BodyHolderStatus>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-
-        return new ResponseEntity<BodyHolderStatus>(HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<BodyHolderStatus>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }
