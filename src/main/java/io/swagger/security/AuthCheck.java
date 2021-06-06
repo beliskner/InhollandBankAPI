@@ -35,6 +35,7 @@ public class AuthCheck {
 
     public Role getAccountRoleByAuthentication(Authentication authentication){
         String email = authentication.getName();
+        Role s = holderService.getHolderByEmail(email).getRole();
         return holderService.getHolderByEmail(email).getRole();
     }
 
