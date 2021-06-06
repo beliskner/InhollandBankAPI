@@ -105,7 +105,7 @@ public class HolderService {
         holder3.setLastName("stok");
         holder3.setRole(Role.ROLE_CUSTOMER);
         holder3.setSalt(salt.toString());
-        holder3.setStatus(Holder.StatusEnum.FROZEN);
+        holder3.setStatus(Holder.StatusEnum.ACTIVE);
         holder3.setPassword(passwordEncoder.encode(fullPassword));
         holder3.setAccounts(accounts);
         holderRepository.save(holder3);
@@ -135,8 +135,16 @@ public class HolderService {
         holderRepository.save(holder5);
     }
 
+    public Boolean checkIfEmailIsNew(String email) {
+        Holder holder = holderRepository.findByEmail(email);
+        if(holder == null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public Holder add(@Valid @RequestBody RequestBodyHolder body) {
-        if(holderRepository.findByEmail(body.getEmail()) == null) {
             // create random salt
             Random r = new SecureRandom();
             byte[] salt = new byte[20];
@@ -165,9 +173,6 @@ public class HolderService {
             List<Account> accounts = emptyList();
             holder.setAccounts(accounts);
             return holderRepository.save(holder);
-        } else {
-            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Email already in use");
-        }
     }
 
     public Holder getHolderById(int id) {
